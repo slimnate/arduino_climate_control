@@ -13,6 +13,8 @@ struct Date : public Comparable {
     int compareYear(Date);
     int compareMonth(Date);
     int compareDay(Date);
+
+    void printSerial();
 };
 
 struct Time : public Comparable {
@@ -24,4 +26,6 @@ struct Time : public Comparable {
     int compareHours(Time);
     int compareMinutes(Time);
     int compareSeconds(Time);
+
+    void printSerial();
 };

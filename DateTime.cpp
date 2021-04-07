@@ -32,6 +32,12 @@ int Date::compareYear(Date other) {
     return compareWholeNumber(year, other.year);
 };
 
+void Date::printSerial() {
+    Serial.print(year); Serial.print("-");
+    Serial.print(month); Serial.print("-");
+    Serial.println(day);
+}
+
 
 //Time object
 Time::Time(byte hours, byte minutes, byte seconds) : hours(hours), minutes(minutes), seconds(seconds) { };
@@ -62,6 +68,12 @@ int Time::compareMinutes(Time other) {
 int Time::compareSeconds(Time other) {
     return compareWholeNumber(seconds, other.seconds);
 };
+
+void Time::printSerial() {
+    Serial.print(hours); Serial.print(":");
+    Serial.print(minutes); Serial.print(":");
+    Serial.println(seconds);
+}
 
 
 //compare functions
