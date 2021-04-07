@@ -17,11 +17,16 @@ DayNight ScheduleEntry::getDayNight(Time t) {
 
     // default to DAY if for some reason neither test matches.
     // Also log error, since this should not happen.
-    Serial.println("ERROR: ScheduleEntry.getDayNight did not match either day or night. Defaulting to DAY.");
-    Serial.print("Time: ");
-    Serial.print(t.hours); Serial.print(":");
-    Serial.print(t.minutes); Serial.print(":");
-    Serial.println(t.seconds);
+    Serial.println("ERROR: ScheduleEntry.getDayNight() did not match either day or night. Defaulting to DAY.");
+
+    Serial.print("Current time: ");
+    t.printSerial();
+
+    Serial.print("Day start time: ");
+    dayStart.printSerial();
+
+    Serial.print("Night start time: ");
+    nightStart.printSerial();
 
     return DAY;
 };

@@ -30,23 +30,21 @@ void LightController::update() {
     ScheduleEntry* sched = settings->schedule->getEntry(today);
     DayNight newStatus = sched->getDayNight(now);
 
+    // if the status has changed, switch lights
     if(status != newStatus) {
-        // if the status has changed, switch lights
+        //print notification message
         Serial.print("Switching lights from ");
         Serial.print(status == DAY ? "day" : "night");
         Serial.print(" to ");
         Serial.println(newStatus == DAY ? "day." : "night.");
 
+        //print date and time
         Serial.print("Date: ");
-        Serial.print(today.year); Serial.print("-");
-        Serial.print(today.month); Serial.print("-");
-        Serial.println(today.day);
-
+        today.printSerial();
         Serial.print("Time: ");
-        Serial.print(now.hours); Serial.print(":");
-        Serial.print(now.minutes); Serial.print(":");
-        Serial.println(now.seconds);
+        now.printSerial();
 
+        //enable appropriate lights
         enableLights(newStatus);
     }
 };
