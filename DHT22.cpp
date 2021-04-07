@@ -18,3 +18,11 @@ void DHT22::updateValues() {
         Serial.println(SimpleDHTErrDuration(err));
     }
 };
+
+float DHT22::getTemperature() {
+    return temperature;
+};
+
+float DHT22::getHumidity() {
+    return humidity;
+}

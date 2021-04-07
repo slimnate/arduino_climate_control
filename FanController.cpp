@@ -3,6 +3,7 @@
 
 FanController::FanController(byte pin) : controlPin(pin) {
     pinMode(controlPin, OUTPUT);
+    enabled = false;
 };
 
 bool FanController::isEnabled() {

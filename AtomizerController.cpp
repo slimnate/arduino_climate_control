@@ -3,6 +3,7 @@
 
 AtomizerController::AtomizerController(byte pin) : controlPin(pin) {
     pinMode(controlPin, OUTPUT);
+    enabled = false;
 };
 
 bool AtomizerController::isEnabled() {
