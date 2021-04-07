@@ -10,7 +10,7 @@ HumidityControllerSettings::HumidityControllerSettings(float target, float kickO
 
 HumidityController::HumidityController(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin, byte fansPin)
     : sensorOne(sensorOnePin), sensorTwo(sensorTwoPin), atomizer(atomizerPin), fans(fansPin) {
-    running = false;
+        running = false;
 };
 
 void HumidityController::configure(HumidityControllerSettings* s) {
@@ -45,7 +45,7 @@ void HumidityController::runHumidifier() {
         fans.enable();
         running = true;
     }
-}
+};
 
 void HumidityController::stopHumidifier() {
     if(running) {
@@ -53,11 +53,11 @@ void HumidityController::stopHumidifier() {
         atomizer.disable();
         atomizer.disable();
     }
-}
+};
 
 bool HumidityController::isRunning() {
     return running;
-}
+};
 
 float HumidityController::averageHumidity() {
     float h1 = sensorOne.getHumidity();

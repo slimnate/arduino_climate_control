@@ -32,9 +32,9 @@ const byte PIN_RELAY_DAY = 10;
 const byte PIN_RELAY_NIGHT = 12;
 
 HumidityController* humidityController;
-LightController* lightController;
-
 HumidityControllerSettings* humidityControllerSettings;
+
+LightController* lightController;
 LightControllerSettings* lightControllerSettings;
 
 void setup()
