@@ -1,3 +1,6 @@
+#ifndef FAN_CONTROLLER_H
+#define FAN_CONTROLLER_H
+
 class FanController {
     private:
         byte controlPin;
@@ -10,3 +13,5 @@ class FanController {
         void enable();
         void disable();
 };
+
+#endif

@@ -1,6 +1,8 @@
+#ifndef LIGHT_CONTROLLER_H
+#define LIGHT_CONTROLLER_H
+
 #include "DateTime.h"
 #include "Scheduling.h"
-
 
 struct LightControllerSettings {
     int updateInterval;
@@ -21,3 +23,5 @@ class LightController {
         static void enableLights(DayNight);
         static DayNight getStatus();
 };
+
+#endif
