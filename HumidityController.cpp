@@ -1,4 +1,5 @@
 #include "HumidityController.h"
+#include "Time.h"
 #include "TimeAlarms.h"
 
 HumidityControllerSettings::HumidityControllerSettings(float target, float kickOn, int fanStop, int update){
@@ -8,13 +9,23 @@ HumidityControllerSettings::HumidityControllerSettings(float target, float kickO
     updateInterval = update;
 };
 
-HumidityController::HumidityController(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin, byte fansPin)
-    : sensorOne(sensorOnePin), sensorTwo(sensorTwoPin), atomizer(atomizerPin), fans(fansPin) {
-        running = false;
-};
+void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
+                                  byte fansPin, HumidityControllerSettings* s) {
+    //init sensors
+    sensorOne = DHT22(sensorOnePin);
+    sensorTwo = DHT22(sensorTwoPin);
+    atomizer = AtomizerController(atomizerPin);
+    fans = FanController(fansPin);
 
-void HumidityController::configure(HumidityControllerSettings* s) {
+    //init settings and tracking vars
     settings = s;
+    running = false;
+    time_t _now = now();
+    lastRun = _now;
+    lastStop = _now;
+
+    //set up update interval
+    Alarm.alarmRepeat(settings->updateInterval, update);
 };
 
 bool HumidityController::verify() {
@@ -31,32 +42,35 @@ void HumidityController::update() {
 
     if(avgHumidity < settings->kickOnHumidity) {
         // start humidifier when kickon humidity reached.
-        runHumidifier();
+        if(!running) {
+            runHumidifier();
+            running = true;
+        }
     } else if(avgHumidity >= settings->targetHumidity) {
-        // stop humidifier when target humidity reached.
-        stopHumidifier();
+        if(running) {
+            // stop atomizer when target humidity reached.
+            stopAtomizer();
+
+            //set up delayed fan stop timer
+            Alarm.alarmOnce(settings->fanStopDelay, stopFans);
+        }
     }
 };
 
 void HumidityController::runHumidifier() {
-    if(!running) {
-        Serial.println("Turning ON humidifier");
-        atomizer.enable();
-        fans.enable();
-        running = true;
-    }
+    Serial.println("Turning ON humidifier");
+    atomizer.enable();
+    fans.enable();
 };
 
-void HumidityController::stopHumidifier() {
-    if(running) {
-        Serial.println("Turning OFF humidifier");
-        atomizer.disable();
-        atomizer.disable();
-    }
+void HumidityController::stopAtomizer() {
+    Serial.println("Turning OFF atomizer");
+    atomizer.disable();
 };
 
-bool HumidityController::isRunning() {
-    return running;
+void HumidityController::stopFans() {
+    Serial.println("Turning OFF fans");
+    fans.disable();
 };
 
 float HumidityController::averageHumidity() {
@@ -65,7 +79,7 @@ float HumidityController::averageHumidity() {
 
     float avg = (h1 + h2) / 2;
 
-    //print details about averages fro debugging
+    //print details about averages for debugging
     Serial.print("Average Humidity: ");
     Serial.print(avg);
     Serial.print(" ( "); Serial.print(h1);

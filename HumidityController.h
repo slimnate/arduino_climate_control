@@ -1,5 +1,7 @@
 #include "DHT22.h"
+#include "Arduino.h"
 
+#include "DateTime.h"
 #include "AtomizerController.h"
 #include "FanController.h"
 
@@ -14,22 +16,22 @@ struct HumidityControllerSettings {
 
 class HumidityController {
     private:
-        DHT22 sensorOne;
-        DHT22 sensorTwo;
-        AtomizerController atomizer;
-        FanController fans;
-        HumidityControllerSettings* settings;
-        bool running;
+        static DHT22 sensorOne;
+        static DHT22 sensorTwo;
+        static AtomizerController atomizer;
+        static FanController fans;
+        static HumidityControllerSettings* settings;
+        static time_t lastRun, lastStop;
+        static bool running;
 
-        float averageHumidity();
+        static float averageHumidity();
 
     public:
-        HumidityController(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin, byte fansPin);
-
-        void configure(HumidityControllerSettings* s);
-        bool verify();
-        void update();
-        bool isRunning();
-        void runHumidifier();
-        void stopHumidifier();
+        static void init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
+                         byte fansPin, HumidityControllerSettings* s);
+        static bool verify();
+        static void update();
+        static void runHumidifier();
+        static void stopAtomizer();
+        static void stopFans();
 };
