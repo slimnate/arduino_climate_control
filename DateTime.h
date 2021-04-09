@@ -3,18 +3,19 @@
 
 #include "Arduino.h"
 
+template <class T>
 struct Comparable {
-    virtual int compare(Comparable);
+    virtual int compare(T) = 0;
 };
 
-struct Date : public Comparable {
+struct Date : Comparable<Date> {
     byte day, month;
     int year;
 
     Date(byte, byte, int);
     Date(int, byte, byte);
 
-    int compare(Date);
+    virtual int compare(Date);
     int compareYear(Date);
     int compareMonth(Date);
     int compareDay(Date);
@@ -22,12 +23,12 @@ struct Date : public Comparable {
     void printSerial();
 };
 
-struct Time : public Comparable {
+struct Time : Comparable<Time> {
     byte hours, minutes, seconds;
 
     Time(byte, byte, byte);
 
-    int compare(Time);
+    virtual int compare(Time);
     int compareHours(Time);
     int compareMinutes(Time);
     int compareSeconds(Time);

@@ -33,6 +33,7 @@ DayNight ScheduleEntry::getDayNight(Time t) {
     return DAY;
 };
 
+
 // Fixed schedule implementation
 FixedSchedule::FixedSchedule(ScheduleEntry* entry) {
     this->entry = entry;

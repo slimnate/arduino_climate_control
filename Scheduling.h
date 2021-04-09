@@ -6,11 +6,6 @@
 
 enum DayNight { DAY, NIGHT };
 
-//abstract Schedule class
-struct Schedule {
-    virtual ScheduleEntry* getEntry(Date) = 0;
-};
-
 //schedule entry class
 struct ScheduleEntry {
     Time dayStart;
@@ -18,6 +13,11 @@ struct ScheduleEntry {
 
     ScheduleEntry(Time, Time);
     DayNight getDayNight(Time);
+};
+
+//abstract Schedule class
+struct Schedule {
+    virtual ScheduleEntry* getEntry(Date) = 0;
 };
 
 //fixed schedule implementation
