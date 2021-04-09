@@ -10,6 +10,11 @@ LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : up
     schedule = s;
 };
 
+// static member initializers
+byte LightController::dayControlPin;
+byte LightController::nightControlPin;
+DayNight LightController::status;
+LightControllerSettings* LightController::settings;
 
 // LightController class
 void LightController::init(byte dayPin, byte nightPin, LightControllerSettings* s) {

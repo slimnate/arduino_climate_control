@@ -26,7 +26,6 @@ class HumidityController {
         static AtomizerController atomizer;
         static FanController fans;
         static HumidityControllerSettings* settings;
-        static time_t lastRun, lastStop;
         static bool running;
 
         static float averageHumidity();

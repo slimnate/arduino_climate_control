@@ -14,6 +14,16 @@ HumidityControllerSettings::HumidityControllerSettings(float target, float kickO
     updateInterval = update;
 };
 
+//static member initializers
+DHT22 HumidityController::sensorOne = NULL;
+DHT22 HumidityController::sensorTwo = NULL;
+AtomizerController HumidityController::atomizer = NULL;
+FanController HumidityController::fans = NULL;
+HumidityControllerSettings* HumidityController::settings;
+bool HumidityController::running = false;
+
+
+//method initializers
 void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                                   byte fansPin, HumidityControllerSettings* s) {
     //init sensors
@@ -24,10 +34,6 @@ void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomize
 
     //init settings and tracking vars
     settings = s;
-    running = false;
-    time_t _now = now();
-    lastRun = _now;
-    lastStop = _now;
 
     //set up update interval
     Alarm.alarmRepeat(settings->updateInterval, update);
