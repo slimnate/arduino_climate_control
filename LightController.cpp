@@ -1,10 +1,9 @@
-#include "LightController.h"
+#include "Arduino.h"
 #include "Scheduling.h"
 #include "DateTime.h"
-
 #include "Time.h"
 #include "TimeAlarms.h"
-#include "Arduino.h"
+#include "LightController.h"
 
 // LightControllerSettings class
 LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : updateInterval(interval) {

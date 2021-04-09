@@ -1,6 +1,11 @@
-#include "HumidityController.h"
+#include "Arduino.h"
 #include "Time.h"
 #include "TimeAlarms.h"
+#include "DHT22.h"
+#include "DateTime.h"
+#include "AtomizerController.h"
+#include "FanController.h"
+#include "HumidityController.h"
 
 HumidityControllerSettings::HumidityControllerSettings(float target, float kickOn, int fanStop, int update){
     targetHumidity = target;

@@ -1,6 +1,7 @@
 #ifndef SCHEDULING_H
 #define SCHEDULING_H
 
+#include "Arduino.h"
 #include "DateTime.h"
 
 enum DayNight { DAY, NIGHT };

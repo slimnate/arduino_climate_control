@@ -1,6 +1,8 @@
 #ifndef FAN_CONTROLLER_H
 #define FAN_CONTROLLER_H
 
+#include "Arduino.h"
+
 class FanController {
     private:
         byte controlPin;

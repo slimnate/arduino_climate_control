@@ -1,6 +1,8 @@
 #ifndef DATE_TIME_COMPARABLE_H
 #define DATE_TIME_COMPARABLE_H
 
+#include "Arduino.h"
+
 struct Comparable {
     virtual int compare(Comparable);
 };

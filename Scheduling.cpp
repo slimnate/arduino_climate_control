@@ -1,3 +1,5 @@
+#include "Arduino.h"
+#include "DateTime.h"
 #include "Scheduling.h"
 
 // ScheduleEntry class

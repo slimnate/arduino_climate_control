@@ -1,8 +1,11 @@
 #ifndef LIGHT_CONTROLLER_H
 #define LIGHT_CONTROLLER_H
 
-#include "DateTime.h"
+#include "Arduino.h"
 #include "Scheduling.h"
+#include "DateTime.h"
+#include "Time.h"
+#include "TimeAlarms.h"
 
 struct LightControllerSettings {
     int updateInterval;

@@ -1,5 +1,5 @@
+#include "Arduino.h"
 #include "FanController.h"
-#include <Arduino.h>
 
 FanController::FanController(byte pin) : controlPin(pin) {
     pinMode(controlPin, OUTPUT);

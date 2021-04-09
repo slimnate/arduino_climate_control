@@ -1,6 +1,7 @@
 #include <Time.h>
 #include <TimeAlarms.h>
 
+/*
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WiFiNINA.h>
@@ -8,6 +9,7 @@
 #include <WiFiSSLClient.h>
 #include <WiFiStorage.h>
 #include <WiFiUdp.h>
+*/
 
 #include "HumidityController.h"
 #include "LightController.h"

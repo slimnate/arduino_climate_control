@@ -25,7 +25,7 @@
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/cores/arduino",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/variants/nano_33_iot",
                 "/Users/slimnate/Documents/Arduino/libraries/SimpleDHT",
-                "/Users/slimnate/Documents/Arduino/libraries/WiFiNINA/src",
+                //"/Users/slimnate/Documents/Arduino/libraries/WiFiNINA/src",
                 "/Users/slimnate/Documents/Arduino/libraries/Time",
                 "/Users/slimnate/Documents/Arduino/libraries/TimeAlarms",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/libraries/SPI",

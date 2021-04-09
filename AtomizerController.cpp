@@ -1,5 +1,5 @@
+#include "Arduino.h"
 #include "AtomizerController.h"
-#include <Arduino.h>
 
 AtomizerController::AtomizerController(byte pin) : controlPin(pin) {
     pinMode(controlPin, OUTPUT);

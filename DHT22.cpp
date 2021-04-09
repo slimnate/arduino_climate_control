@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "DHT22.h"
 
 DHT22::DHT22(byte pin) : pin(pin), dht(pin) { };

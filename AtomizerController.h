@@ -1,6 +1,8 @@
 #ifndef ATOMIZER_CONTROLLER_H
 #define ATOMIZER_CONTROLLER_H
 
+#include "Arduino.h"
+
 class AtomizerController {
     private:
         byte controlPin;
