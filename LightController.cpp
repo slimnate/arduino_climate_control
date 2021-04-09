@@ -2,25 +2,31 @@
 #include "Scheduling.h"
 #include "DateTime.h"
 
-#include <Time.h>
-#include <Arduino.h>
+#include "Time.h"
+#include "TimeAlarms.h"
+#include "Arduino.h"
 
 // LightControllerSettings class
-LightControllerSettings::LightControllerSettings(Schedule* s) {
+LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : updateInterval(interval) {
     schedule = s;
 };
 
 
 // LightController class
-LightController::LightController(byte dayPin, byte nightPin)
-    : dayControlPin(dayPin), nightControlPin(nightPin) {
-    //configure pin modes
+void LightController::init(byte dayPin, byte nightPin, LightControllerSettings* s) {
+    // init pins
+    dayControlPin = dayPin;
+    nightControlPin = nightPin;
+
+    // init settings
+    settings = s;
+
+    // configure pin modes
     pinMode(dayControlPin, OUTPUT);
     pinMode(nightControlPin, OUTPUT);
-};
 
-void LightController::configure(LightControllerSettings* s) {
-    settings = s;
+    // set up update interval
+    Alarm.timerRepeat(settings->updateInterval, update);
 };
 
 void LightController::update() {
@@ -38,9 +44,9 @@ void LightController::update() {
         Serial.print(" to ");
         Serial.println(newStatus == DAY ? "day." : "night.");
 
-        //print date and time
         Serial.print("Date: ");
         today.printSerial();
+        
         Serial.print("Time: ");
         now.printSerial();
 

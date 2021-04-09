@@ -3,22 +3,21 @@
 
 
 struct LightControllerSettings {
+    int updateInterval;
     Schedule* schedule;
 
-    LightControllerSettings(Schedule*);
+    LightControllerSettings(Schedule*, int);
 };
 
 class LightController {
     private:
-        byte dayControlPin, nightControlPin;
-        DayNight status;
-        LightControllerSettings* settings;
+        static byte dayControlPin, nightControlPin;
+        static DayNight status;
+        static LightControllerSettings* settings;
         
     public:
-        LightController(byte dayControlPin, byte nightControlPin);
-
-        void configure(LightControllerSettings*);
-        void update();
-        void enableLights(DayNight);
-        DayNight getStatus();
+        static void init(byte dayControlPin, byte nightControlPin, LightControllerSettings*);
+        static void update();
+        static void enableLights(DayNight);
+        static DayNight getStatus();
 };

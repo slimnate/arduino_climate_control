@@ -31,8 +31,6 @@ const byte PIN_RELAY_DAY = 10;
 const byte PIN_RELAY_NIGHT = 12;
 
 HumidityControllerSettings* humidityControllerSettings;
-
-LightController* lightController;
 LightControllerSettings* lightControllerSettings;
 
 void setup()
@@ -44,7 +42,6 @@ void setup()
         HUMIDITY_FAN_STOP_DEFAULT,
         HUMIDITY_UPDATE_DEFAULT
     );
-
     HumidityController::init(
         PIN_DHT22_ONE,
         PIN_DHT22_TWO,
@@ -54,33 +51,27 @@ void setup()
     );
 
     //set up light controller (timer and relays)
-    lightController = new LightController(PIN_RELAY_DAY, PIN_RELAY_NIGHT);
     lightControllerSettings = new LightControllerSettings(
         new FixedSchedule(
             new ScheduleEntry(
                 LIGHT_DAY_START_DEFAULT,
                 LIGHT_NIGHT_START_DEFAULT
             )
-        )
+        ),
+        LIGHT_UPDATE_DEFAULT
     );
-    lightController->configure(lightControllerSettings);
+    LightController::init(
+        PIN_RELAY_DAY,
+        PIN_RELAY_NIGHT,
+        lightControllerSettings
+    );
 
     //TODO: set up web server/bluetooth
 
-    //set up update alarms
-    setupTimers();
 }
 
 void loop()
 {
     //check alarms once every second
     Alarm.delay(1000);
-}
-
-void setupTimers() {
-    Alarm.timerRepeat(LIGHT_UPDATE_DEFAULT, updateLightController);
-}
-
-void updateLightController() {
-    lightController->update();
 }
