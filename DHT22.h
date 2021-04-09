@@ -1,4 +1,7 @@
-#include <SimpleDHT.h>
+#ifndef DHT22_H
+#define DHT22_H
+
+#include "SimpleDHT.h"
 
 class DHT22 {
     private:
@@ -15,3 +18,5 @@ class DHT22 {
         float getTemperature();
         float getHumidity();
 };
+
+#endif

@@ -1,3 +1,6 @@
+#ifndef HUMIDITY_CONTROLLER_H
+#define HUMIDITY_CONTROLLER_H
+
 #include "DHT22.h"
 #include "Arduino.h"
 
@@ -13,6 +16,7 @@ struct HumidityControllerSettings {
 
     HumidityControllerSettings(float target, float kickOn, int fanStop, int update);
 };
+
 
 class HumidityController {
     private:
@@ -35,3 +39,5 @@ class HumidityController {
         static void stopAtomizer();
         static void stopFans();
 };
+
+#endif

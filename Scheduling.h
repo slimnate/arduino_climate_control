@@ -1,3 +1,6 @@
+#ifndef SCHEDULING_H
+#define SCHEDULING_H
+
 #include "DateTime.h"
 
 enum DayNight { DAY, NIGHT };
@@ -33,3 +36,6 @@ struct MonthlySchedule : public Schedule {
 };
 
 //TODO: other schedule implementations
+
+
+#endif

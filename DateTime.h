@@ -1,3 +1,6 @@
+#ifndef DATE_TIME_COMPARABLE_H
+#define DATE_TIME_COMPARABLE_H
+
 struct Comparable {
     virtual int compare(Comparable);
 };
@@ -29,3 +32,5 @@ struct Time : public Comparable {
 
     void printSerial();
 };
+
+#endif

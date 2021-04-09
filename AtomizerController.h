@@ -1,3 +1,6 @@
+#ifndef ATOMIZER_CONTROLLER_H
+#define ATOMIZER_CONTROLLER_H
+
 class AtomizerController {
     private:
         byte controlPin;
@@ -10,3 +13,5 @@ class AtomizerController {
         void enable();
         void disable();
 };
+
+#endif
