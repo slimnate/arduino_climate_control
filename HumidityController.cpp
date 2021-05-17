@@ -54,7 +54,7 @@ void HumidityController::update() {
     float avgHumidity = averageHumidity();
 
     if(avgHumidity < settings->kickOnHumidity) {
-        // start humidifier when kickon humidity reached.
+        // start humidifier when kick-on humidity reached.
         if(!running) {
             runHumidifier();
             running = true;
