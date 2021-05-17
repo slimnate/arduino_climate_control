@@ -1,8 +1,10 @@
 #include "Arduino.h"
 #include "WiFi.h"
+#include "TimeAlarms.h"
 
 #include "WifiData.h"
 #include "WifiController.h"
+
 
 
 String encryptionTypeToString(byte encryptionType) {
@@ -29,8 +31,9 @@ String encryptionTypeToString(byte encryptionType) {
 };
 
 // WifiControllerSettings class
-WifiControllerSettings::WifiControllerSettings(String ssid, String pass, bool requireLatestFirmware)
-    : ssid(ssid), password(pass), requireLatestFirmware(requireLatestFirmware) { }
+WifiControllerSettings::WifiControllerSettings(String ssid, String pass, bool requireLatestFw, int connCheckInterval)
+        : ssid(ssid), password(pass), requireLatestFirmware(requireLatestFw),
+            connectionCheckInterval(connCheckInterval) { }
 
 
 // WifiController class
@@ -59,31 +62,18 @@ void WifiController::init(WifiControllerSettings* s) {
     macAddress = getMacAddress();
     Serial.println(macAddress.toString());
 
+    //print network list
     printAvailableNetworks();
 
-    //connect to network
-    Serial.println("Connecting to network: " + settings->ssid);
-    int ssidLen = settings->ssid.length();
-    int passLen = settings->password.length();
-    char ssid[ssidLen];
-    char pass[passLen];
-    
-    settings->ssid.toCharArray(ssid, ssidLen + 1);
-    settings->password.toCharArray(pass, passLen + 1);
-
-    int attempts = 3;
-    while(WiFi.status() != WL_CONNECTED && attempts > 0) {
-        attempts--;
-
-        Serial.print("Wifi.begin("); Serial.print(ssid); Serial.print(", "); Serial.print(pass); Serial.println(")");
-        WiFi.begin(ssid, pass);
-        delay(10000);
-        Serial.println("Status: " + statusToString(WiFi.status()));
-    }
+    //connect to the network
+    connect();
 
     //display network info
     IPAddress address = WiFi.localIP();
     address.printTo(Serial);
+
+    //set up timer to check connection status and attempt to resolve disconnects
+    Alarm.timerRepeat(settings->connectionCheckInterval, checkConnectionStatus);
 };
 
 String WifiController::statusToString(byte status) {
@@ -141,6 +131,34 @@ MacAddress WifiController::getMacAddress() {
     WiFi.macAddress(macBytes);
     MacAddress mac = MacAddress(macBytes);
     return mac;
+};
+
+void WifiController::connect() {
+    Serial.println("Connecting to network: " + settings->ssid);
+    int ssidLen = settings->ssid.length();
+    int passLen = settings->password.length();
+    char ssid[ssidLen];
+    char pass[passLen];
+    
+    settings->ssid.toCharArray(ssid, ssidLen + 1);
+    settings->password.toCharArray(pass, passLen + 1);
+
+    int attempts = 3;
+    while(WiFi.status() != WL_CONNECTED && attempts > 0) {
+        attempts--;
+
+        Serial.print("Wifi.begin("); Serial.print(ssid); Serial.print(", "); Serial.print(pass); Serial.println(")");
+        WiFi.begin(ssid, pass);
+        delay(10000);
+        Serial.println("Status: " + statusToString(WiFi.status()));
+    }
+};
+
+void WifiController::checkConnectionStatus() {
+    if(WiFi.status() != WL_CONNECTED) {
+        Serial.println("WiFi disconnected - attempting to reconnect");
+        connect();
+    }
 };
 
 void WifiController::printAvailableNetworks() {

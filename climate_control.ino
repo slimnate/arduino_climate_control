@@ -18,9 +18,10 @@ const int HUMIDITY_UPDATE_DEFAULT = 10; // update humidity every 10 seconds by d
 
 const Time LIGHT_DAY_START_DEFAULT = Time(07,00,00); //day start 7am
 const Time LIGHT_NIGHT_START_DEFAULT = Time(19,00,00); //night start 7pm
-const int LIGHT_UPDATE_DEFAULT = 1 * MINUTES; // update light every 1 minutes by default
+const int LIGHT_UPDATE_DEFAULT = 1 * MINUTES; // update lights every 1 minutes by default
 
 const bool WIFI_REQUIRE_LATEST_FIRMWARE = false;
+const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * MINUTES;
 
 const byte PIN_DHT22_ONE = 2;
 const byte PIN_DHT22_TWO = 4;
@@ -77,7 +78,8 @@ void setup()
     wifiControllersettings = new WifiControllerSettings(
         SECRET_SSID,
         SECRET_PASS,
-        WIFI_REQUIRE_LATEST_FIRMWARE
+        WIFI_REQUIRE_LATEST_FIRMWARE,
+        WIFI_CONNECTION_CHECK_INTERVAL
     );
     WifiController::init(wifiControllersettings);
 

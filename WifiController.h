@@ -8,8 +8,9 @@ struct WifiControllerSettings {
     String ssid;
     String password;
     bool requireLatestFirmware;
+    int connectionCheckInterval;
 
-    WifiControllerSettings(String, String, bool);
+    WifiControllerSettings(String, String, bool, int);
 };
 
 class WifiController {
@@ -22,6 +23,8 @@ class WifiController {
         static bool verifyModule();
         static bool verifyFirmware();
         static MacAddress getMacAddress();
+        static void connect();
+        static void checkConnectionStatus();
 
         static void printAvailableNetworks();
         static void printNetwork(byte);
