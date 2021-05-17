@@ -11,15 +11,11 @@ bool FanController::isEnabled() {
 };
 
 void FanController::enable() {
-    if(!enabled) {
-        digitalWrite(controlPin, HIGH);
-        enabled = true;
-    }
+    digitalWrite(controlPin, HIGH);
+    enabled = true;
 };
 
 void FanController::disable() {
-    if(enabled) {
-        digitalWrite(controlPin, LOW);
-        enabled = false;
-    }
+    digitalWrite(controlPin, LOW);
+    enabled = false;
 }
