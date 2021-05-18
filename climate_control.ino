@@ -8,6 +8,7 @@
 #include "HumidityController.h"
 #include "LightController.h"
 #include "WifiController.h"
+#include "NTPClient.h"
 
 const int MINUTES = 60;
 
@@ -34,6 +35,11 @@ HumidityControllerSettings* humidityControllerSettings;
 LightControllerSettings* lightControllerSettings;
 WifiControllerSettings* wifiControllersettings;
 
+WiFiUDP udp;
+NTPClient ntp = NTPClient(udp);
+
+time_t getNTPTimeWrapper();
+
 void setup()
 {
     //init serial
@@ -41,7 +47,7 @@ void setup()
     while (!Serial) {
         ;
     }
-/*
+
 	// set up humidity controller (sensors, atomizer and fan control)
     humidityControllerSettings = new HumidityControllerSettings(
         HUMIDITY_TARGET_DEFAULT,
@@ -72,7 +78,7 @@ void setup()
         PIN_RELAY_NIGHT,
         lightControllerSettings
     );
-*/
+
     //set up wifi connection
     Serial.println("==========Initializing wifi==========");
     wifiControllersettings = new WifiControllerSettings(
@@ -83,6 +89,17 @@ void setup()
     );
     WifiController::init(wifiControllersettings);
 
+
+    //set up NTP provider
+    ntp.initUdp();
+    setSyncProvider(getNTPTimeWrapper);
+    setSyncInterval(60); //update every 60 seconds
+
+    //print date and time on startup
+    Date today = Date(year(), (byte)month(), (byte)day());
+    Time now = Time((byte)hour(), (byte)minute(), (byte)second());
+    Serial.println("Date: "); today.printSerial();
+    Serial.println("Time: "); now.printSerial();
 }
 
 void loop()
@@ -90,3 +107,7 @@ void loop()
     //check alarms twice per second
     Alarm.delay(500);
 }
+
+time_t getNTPTimeWrapper() {
+    return ntp.getNTPTime();
+};

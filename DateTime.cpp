@@ -57,7 +57,7 @@ void Date::printSerial() {
     Serial.print(year); Serial.print("-");
     Serial.print(month); Serial.print("-");
     Serial.println(day);
-}
+};
 
 
 //Time object
@@ -94,4 +94,4 @@ void Time::printSerial() {
     Serial.print(hours); Serial.print(":");
     Serial.print(minutes); Serial.print(":");
     Serial.println(seconds);
-}
+};

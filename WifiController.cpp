@@ -5,8 +5,6 @@
 #include "WifiData.h"
 #include "WifiController.h"
 
-
-
 String encryptionTypeToString(byte encryptionType) {
     switch(encryptionType) {
         case ENC_TYPE_TKIP:
@@ -63,14 +61,14 @@ void WifiController::init(WifiControllerSettings* s) {
     Serial.println(macAddress.toString());
 
     //print network list
-    printAvailableNetworks();
+    //printAvailableNetworks();
 
     //connect to the network
     connect();
 
     //display network info
     IPAddress address = WiFi.localIP();
-    address.printTo(Serial);
+    address.printTo(Serial); Serial.println();
 
     //set up timer to check connection status and attempt to resolve disconnects
     Alarm.timerRepeat(settings->connectionCheckInterval, checkConnectionStatus);
