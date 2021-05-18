@@ -1,3 +1,5 @@
+#include "Arduino.h"
+#include "DateTime.h"
 #include "Scheduling.h"
 
 // ScheduleEntry class
@@ -30,6 +32,7 @@ DayNight ScheduleEntry::getDayNight(Time t) {
 
     return DAY;
 };
+
 
 // Fixed schedule implementation
 FixedSchedule::FixedSchedule(ScheduleEntry* entry) {

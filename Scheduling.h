@@ -1,14 +1,10 @@
 #ifndef SCHEDULING_H
 #define SCHEDULING_H
 
+#include "Arduino.h"
 #include "DateTime.h"
 
 enum DayNight { DAY, NIGHT };
-
-//abstract Schedule class
-struct Schedule {
-    virtual ScheduleEntry* getEntry(Date) = 0;
-};
 
 //schedule entry class
 struct ScheduleEntry {
@@ -17,6 +13,11 @@ struct ScheduleEntry {
 
     ScheduleEntry(Time, Time);
     DayNight getDayNight(Time);
+};
+
+//abstract Schedule class
+struct Schedule {
+    virtual ScheduleEntry* getEntry(Date) = 0;
 };
 
 //fixed schedule implementation

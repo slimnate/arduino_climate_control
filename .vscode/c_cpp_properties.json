@@ -7,6 +7,7 @@
             "compilerArgs": [
                 "-mcpu=cortex-m0plus",
                 "-mthumb",
+                "-w",
                 "-std=gnu++11",
                 "-ffunction-sections",
                 "-fdata-sections",
@@ -24,11 +25,11 @@
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/cores/arduino/api/deprecated-avr-comp",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/cores/arduino",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/variants/nano_33_iot",
-                "/Users/slimnate/Documents/Arduino/libraries/SimpleDHT",
-                "/Users/slimnate/Documents/Arduino/libraries/WiFiNINA/src",
-                "/Users/slimnate/Documents/Arduino/libraries/Time",
                 "/Users/slimnate/Documents/Arduino/libraries/TimeAlarms",
+                "/Users/slimnate/Documents/Arduino/libraries/Time",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/hardware/samd/1.8.11/libraries/SPI",
+                "/Users/slimnate/Documents/Arduino/libraries/WiFiNINA/src",
+                "/Users/slimnate/Documents/Arduino/libraries/SimpleDHT",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/arm-none-eabi",
                 "/Users/slimnate/Library/Arduino15/packages/arduino/tools/arm-none-eabi-gcc/7-2017q4/arm-none-eabi/include/c++/7.2.1/backward",
@@ -43,7 +44,7 @@
             "cppStandard": "c++11",
             "defines": [
                 "F_CPU=48000000L",
-                "ARDUINO=10812",
+                "ARDUINO=10813",
                 "ARDUINO_SAMD_NANO_33_IOT",
                 "ARDUINO_ARCH_SAMD",
                 "CRYSTALLESS",
@@ -499,7 +500,8 @@
                 "__QQ_IBIT__=0",
                 "__cpp_init_captures=201304",
                 "__ATOMIC_ACQ_REL=4",
-                "__ATOMIC_RELEASE=3"
+                "__ATOMIC_RELEASE=3",
+                "USBCON"
             ]
         }
     ]

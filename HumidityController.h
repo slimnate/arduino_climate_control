@@ -1,9 +1,10 @@
 #ifndef HUMIDITY_CONTROLLER_H
 #define HUMIDITY_CONTROLLER_H
 
-#include "DHT22.h"
 #include "Arduino.h"
-
+#include "Time.h"
+#include "TimeAlarms.h"
+#include "DHT22.h"
 #include "DateTime.h"
 #include "AtomizerController.h"
 #include "FanController.h"
@@ -25,7 +26,6 @@ class HumidityController {
         static AtomizerController atomizer;
         static FanController fans;
         static HumidityControllerSettings* settings;
-        static time_t lastRun, lastStop;
         static bool running;
 
         static float averageHumidity();

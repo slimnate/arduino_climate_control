@@ -1,16 +1,20 @@
-#include "LightController.h"
+#include "Arduino.h"
 #include "Scheduling.h"
 #include "DateTime.h"
-
 #include "Time.h"
 #include "TimeAlarms.h"
-#include "Arduino.h"
+#include "LightController.h"
 
 // LightControllerSettings class
 LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : updateInterval(interval) {
     schedule = s;
 };
 
+// static member initializers
+byte LightController::dayControlPin;
+byte LightController::nightControlPin;
+DayNight LightController::status;
+LightControllerSettings* LightController::settings;
 
 // LightController class
 void LightController::init(byte dayPin, byte nightPin, LightControllerSettings* s) {

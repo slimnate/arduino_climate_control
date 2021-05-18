@@ -1,4 +1,25 @@
+#include "Arduino.h"
 #include "DateTime.h"
+
+//compare functions
+int compareWholeNumber(byte first, byte second) {
+    if(first < second) {
+        return -1;
+    } else if(first > second) {
+        return 1;
+    }
+    return 0;
+};
+
+int compareWholeNumber(int first, int second) {
+    if(first < second) {
+        return -1;
+    } else if(first > second) {
+        return 1;
+    }
+    return 0;
+};
+
 
 // Date object
 Date::Date(byte day, byte month, int year) : day(day), month(month), year(year) { };
@@ -36,7 +57,7 @@ void Date::printSerial() {
     Serial.print(year); Serial.print("-");
     Serial.print(month); Serial.print("-");
     Serial.println(day);
-}
+};
 
 
 //Time object
@@ -44,9 +65,9 @@ Time::Time(byte hours, byte minutes, byte seconds) : hours(hours), minutes(minut
 
 int Time::compare(Time other) {
     int cHours, cMinutes, cSeconds;
-    int cHours = compareHours(other);
-    int cMinutes = compareMinutes(other);
-    int cSeconds = compareSeconds(other);
+    cHours = compareHours(other);
+    cMinutes = compareMinutes(other);
+    cSeconds = compareSeconds(other);
 
     if(cHours == 0) {
         if(cMinutes == 0) {
@@ -73,24 +94,4 @@ void Time::printSerial() {
     Serial.print(hours); Serial.print(":");
     Serial.print(minutes); Serial.print(":");
     Serial.println(seconds);
-}
-
-
-//compare functions
-int compareWholeNumber(byte first, byte second) {
-    if(first < second) {
-        return -1;
-    } else if(first > second) {
-        return 1;
-    }
-    return 0;
-};
-
-int compareWholeNumber(int first, int second) {
-    if(first < second) {
-        return -1;
-    } else if(first > second) {
-        return 1;
-    }
-    return 0;
 };

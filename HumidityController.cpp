@@ -1,6 +1,11 @@
-#include "HumidityController.h"
+#include "Arduino.h"
 #include "Time.h"
 #include "TimeAlarms.h"
+#include "DHT22.h"
+#include "DateTime.h"
+#include "AtomizerController.h"
+#include "FanController.h"
+#include "HumidityController.h"
 
 HumidityControllerSettings::HumidityControllerSettings(float target, float kickOn, int fanStop, int update){
     targetHumidity = target;
@@ -9,8 +14,19 @@ HumidityControllerSettings::HumidityControllerSettings(float target, float kickO
     updateInterval = update;
 };
 
+//static member initializers
+DHT22 HumidityController::sensorOne = NULL;
+DHT22 HumidityController::sensorTwo = NULL;
+AtomizerController HumidityController::atomizer = NULL;
+FanController HumidityController::fans = NULL;
+HumidityControllerSettings* HumidityController::settings;
+bool HumidityController::running = false;
+
+
+//method initializers
 void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                                   byte fansPin, HumidityControllerSettings* s) {
+    Serial.println("==========Initializing Humidity Controller==========");
     //init sensors
     sensorOne = DHT22(sensorOnePin);
     sensorTwo = DHT22(sensorTwoPin);
@@ -19,13 +35,10 @@ void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomize
 
     //init settings and tracking vars
     settings = s;
-    running = false;
-    time_t _now = now();
-    lastRun = _now;
-    lastStop = _now;
 
+    Serial.print("setting update interval: "); Serial.println(settings->updateInterval);
     //set up update interval
-    Alarm.alarmRepeat(settings->updateInterval, update);
+    Alarm.timerRepeat(settings->updateInterval, update);
 };
 
 bool HumidityController::verify() {
@@ -41,7 +54,7 @@ void HumidityController::update() {
     float avgHumidity = averageHumidity();
 
     if(avgHumidity < settings->kickOnHumidity) {
-        // start humidifier when kickon humidity reached.
+        // start humidifier when kick-on humidity reached.
         if(!running) {
             runHumidifier();
             running = true;
@@ -52,7 +65,7 @@ void HumidityController::update() {
             stopAtomizer();
 
             //set up delayed fan stop timer
-            Alarm.alarmOnce(settings->fanStopDelay, stopFans);
+            Alarm.timerOnce(settings->fanStopDelay, stopFans);
         }
     }
 };
@@ -71,6 +84,7 @@ void HumidityController::stopAtomizer() {
 void HumidityController::stopFans() {
     Serial.println("Turning OFF fans");
     fans.disable();
+    running = false; // set running false so humidity check knows to start up again.
 };
 
 float HumidityController::averageHumidity() {
@@ -83,7 +97,7 @@ float HumidityController::averageHumidity() {
     Serial.print("Average Humidity: ");
     Serial.print(avg);
     Serial.print(" ( "); Serial.print(h1);
-    Serial.print(",");  Serial.print(h2); Serial.println(")");
+    Serial.print(" , ");  Serial.print(h2); Serial.println(" )");
 
     return avg;
 };
