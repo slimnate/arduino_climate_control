@@ -9,6 +9,7 @@
 #include "LightController.h"
 #include "WifiController.h"
 #include "NTPClient.h"
+#include "WebServer.h"
 
 const int MINUTES = 60;
 
@@ -37,6 +38,8 @@ WifiControllerSettings* wifiControllersettings;
 
 WiFiUDP udp;
 NTPClient ntp = NTPClient(udp);
+
+WebServer server;
 
 time_t getNTPTimeWrapper();
 
@@ -100,10 +103,17 @@ void setup()
     Time now = Time((byte)hour(), (byte)minute(), (byte)second());
     Serial.println("Date: "); today.printSerial();
     Serial.println("Time: "); now.printSerial();
+
+    //start web server
+    server = WebServer(); // initialize web server with no port defaults to port 80.
+    server.listen();
 }
 
 void loop()
 {
+    //process incoming http requests each loop
+    server.processIncomingRequests();
+
     //check alarms twice per second
     Alarm.delay(500);
 }
