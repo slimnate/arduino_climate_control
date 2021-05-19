@@ -147,7 +147,7 @@ void WifiController::connect() {
 
         Serial.print("Wifi.begin("); Serial.print(ssid); Serial.print(", "); Serial.print(pass); Serial.println(")");
         WiFi.begin(ssid, pass);
-        delay(10000);
+        delay(5000);
         Serial.println("Status: " + statusToString(WiFi.status()));
     }
 };

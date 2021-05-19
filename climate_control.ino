@@ -1,6 +1,5 @@
 #include <Time.h>
 #include <TimeAlarms.h>
-
 #include <SPI.h>
 #include <WiFiNINA.h>
 
@@ -50,7 +49,7 @@ void setup()
     while (!Serial) {
         ;
     }
-
+/*
 	// set up humidity controller (sensors, atomizer and fan control)
     humidityControllerSettings = new HumidityControllerSettings(
         HUMIDITY_TARGET_DEFAULT,
@@ -81,7 +80,7 @@ void setup()
         PIN_RELAY_NIGHT,
         lightControllerSettings
     );
-
+*/
     //set up wifi connection
     Serial.println("==========Initializing wifi==========");
     wifiControllersettings = new WifiControllerSettings(
@@ -96,7 +95,7 @@ void setup()
     //set up NTP provider
     ntp.initUdp();
     setSyncProvider(getNTPTimeWrapper);
-    setSyncInterval(60); //update every 60 seconds
+    setSyncInterval(5 * MINUTES); //update every 5 min
 
     //print date and time on startup
     Date today = Date(year(), (byte)month(), (byte)day());
