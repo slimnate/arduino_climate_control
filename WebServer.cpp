@@ -5,22 +5,23 @@
 #include "WiFiNINA.h"
 
 
-// constructors 
+// ==== WebServer ====
 
+//create WebServer with default port
 WebServer::WebServer() : _server(WS_DEFAULT_PORT) { };
 
+//create WebServer with custom port
 WebServer::WebServer(byte port) : _server(port) { };
 
-// public methods
-
+// begin listening to requests
 void WebServer::listen() {
     _server.begin();
 };
 
-void WebServer::processIncomingRequests() {
+// process next incoming request. Returns a WebRequest object.
+int WebServer::processIncomingRequest(WebRequest & req) {
     // get incoming client requests
     WiFiClient client = _server.available();
-    WebRequest req;
 
     // reset _lineMode
     _lineMode = LINE_MODE_REQUEST;
@@ -109,19 +110,18 @@ void WebServer::processIncomingRequests() {
                     req.body = String(body);
 
                     Serial.println(req.body);
+
+                    // return the parsed request object, for external handling, make sure to add client first
+                    req.client = client;
+                    return 1;
                 } // end if (_lineMode == ...)
 
             } //end if (client.available())
 
-            // increment loop counter so we can break out after x iterations.
-            i++;
-
         } //end while(client.connected())
 
-        //end connection with client after short delay
-        delay(10);
-        client.stop();
     } //end if (client)
+    return -1; // return fail if no incoming requests
 };
 
 // clear line buffer and read next line
@@ -196,4 +196,87 @@ byte WebServer::parseLineHeader(char * key, char * value) {
 
     // if we exit the switch statement before returning, that means there was a problem parsing.
     return PARSE_FAIL;
+};
+
+// ==== WebRequest ====
+
+//return a WebResponse object that can be used to reply to the incoming request
+WebResponse WebRequest::getResponse() {
+    //create new response object
+    WebResponse res;
+    res.client = client;
+    res.httpVersion="HTTP/1.1";
+
+    //set up default status
+    res.status = HTTP_OK;
+
+    //set up default headers
+    res.addHeader("Content-Type", "text/plain");
+    res.addHeader("Server", "Arduino NANO 33 IoT - Snake Tank Controller");
+    res.addHeader("Connection", "close");
+
+    return res;
+};
+
+
+// ==== WebResponse ====
+
+// Add a new header to the header list. Returns 1 for success, returns -1 if error.
+int WebResponse::addHeader(char * key, char * value) {
+    HttpHeader h;
+    h.key = key;
+    h.value = value;
+    return addHeader(h);
+};
+
+// Add a new header to the header list. Returns 1 for success, returns -1 if error.
+int WebResponse::addHeader(HttpHeader h) {
+    //make sure we have room
+    if(_currentHeaderIndex >= REQ_HEADER_COUNT) {
+        return -1; //return fail
+    }
+
+    //add header
+    headers[_currentHeaderIndex] = h;
+    _currentHeaderIndex += 1;
+    return 1; // return success
+};
+
+// Attempt to send the response to the requesting client. Returns -1 for fail, 1 for success.
+int WebResponse::send() {
+    if(client.connected()) {
+        Serial.println("Client connected");
+        //send version and status line.
+        client.println(httpVersion + " " + status);
+
+        // calculate content-length header and add
+        int bodyLen = body.length();
+        if(bodyLen > 0) {
+            char bls[5];
+            itoa(bodyLen, bls, 10);
+            addHeader("Content-Length", bls);
+        } else {
+            addHeader("Content-Length", "0");
+        }
+
+        //send headers
+        for (int i = 0; i < _currentHeaderIndex; i++) {
+            HttpHeader h = headers[i];
+            client.println(h.key + ": " + h.value);
+        }
+
+        client.println(); // empty line to signify end of headers
+
+        // send body
+        client.print(body);
+
+        // wait for client to receive all data
+        delay(20);
+
+        // close connection and return success
+        client.stop();
+        return 1;
+    }
+
+    return -1; // client not connected.
 }

@@ -111,7 +111,20 @@ void setup()
 void loop()
 {
     //process incoming http requests each loop
-    server.processIncomingRequests();
+    WebRequest req;
+
+    if(server.processIncomingRequest(req) == 1) {
+        Serial.println("Loop - responding to request...");
+
+        WebResponse res = req.getResponse();
+
+        res.addHeader("Test", "This is a test header");
+        res.body = "this is a test response body";
+
+        res.send();
+    }
+
+    
 
     //check alarms twice per second
     Alarm.delay(500);

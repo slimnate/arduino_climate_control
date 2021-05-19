@@ -133,13 +133,14 @@ MacAddress WifiController::getMacAddress() {
 
 void WifiController::connect() {
     Serial.println("Connecting to network: " + settings->ssid);
-    int ssidLen = settings->ssid.length();
-    int passLen = settings->password.length();
+    int ssidLen = settings->ssid.length()+1;
+    int passLen = settings->password.length()+1;
+
     char ssid[ssidLen];
     char pass[passLen];
     
-    settings->ssid.toCharArray(ssid, ssidLen + 1);
-    settings->password.toCharArray(pass, passLen + 1);
+    settings->ssid.toCharArray(ssid, ssidLen);
+    settings->password.toCharArray(pass, passLen);
 
     int attempts = 3;
     while(WiFi.status() != WL_CONNECTED && attempts > 0) {
