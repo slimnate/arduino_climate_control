@@ -22,12 +22,14 @@ const byte PARSE_FAIL    = 1; // Parsing failed
 
 // data size constants - since I need to use char[] for these, I must define a fixed max size for each char[]
 
-const byte REQ_METHOD_SIZE       = 10;  // Max size of request method
-const byte REQ_PATH_SIZE         = 255; // Max size of request path
+const byte REQ_METHOD_SIZE       = 10;  // Max size of request method string
+const byte REQ_PATH_SIZE         = 255; // Max size of request path string
+const byte REQ_PARAMS_STR_SIZE   = 255; // Max size of query params string
 const byte REQ_VERSION_SIZE      = 10;  // Max size of request version
 const byte REQ_HEADER_COUNT      = 20;  // Max number of headers a request can hold
 const byte REQ_HEADER_NAME_SIZE  = 50;  // Max size of header name
 const byte REQ_HEADER_VALUE_SIZE = 255; // Max size of header value
+const byte REQ_QUERY_PARAMS_SIZE = 10;  // Max number of query param objects in a single request
 const int REQ_BODY_SIZE          = 2048;// Max size of body value
 
 // HTTP Status codes - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
@@ -46,6 +48,12 @@ const char HTTP_SERVER_ERROR[]      = "500 Internal Server Error"; // The server
 struct HttpHeader {
     String key;
     String value;
+};
+
+// represents a request query parameter
+struct QueryParam {
+    String key; // param key
+    String value; // param value
 };
 
 class WebResponse {
@@ -71,6 +79,7 @@ class WebRequest {
         WiFiClient client;
         String method;
         String path;
+        QueryParam params[REQ_QUERY_PARAMS_SIZE];
         String httpVersion;
         String body;
         HttpHeader headers[REQ_HEADER_COUNT];
@@ -93,9 +102,10 @@ class WebServer {
         int processIncomingRequest(WebRequest&); // process the next incoming request, return 1 when request found, -1 otherwise
 
         void readLine(WiFiClient); // read the next line into the internal _lineBuffer
-
-        byte parseLineRequest(char*, char*, char*); // parse buffered line as a request (src, method, path)
+        
+        byte parseLineRequest(char*, char*, char*, char*); // parse buffered line as a request (src, method, path, params)
         byte parseLineHeader(char*, char*); // parse buffered line as a header (key, value)
+        void parseQueryParams(char*, QueryParam*); // parse query params into provided array
 };
 
 #endif

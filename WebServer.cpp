@@ -18,7 +18,7 @@ void WebServer::listen() {
     _server.begin();
 };
 
-// process next incoming request. Returns a WebRequest object.
+// process next incoming request, updating provided WebRequest object.
 int WebServer::processIncomingRequest(WebRequest & req) {
     // get incoming client requests
     WiFiClient client = _server.available();
@@ -43,21 +43,24 @@ int WebServer::processIncomingRequest(WebRequest & req) {
                     char method[REQ_METHOD_SIZE];
                     char path[REQ_PATH_SIZE];
                     char httpVersion[REQ_VERSION_SIZE];
+                    char params[REQ_PARAMS_STR_SIZE];
 
                     // process request line
-                    byte res = parseLineRequest(method, path, httpVersion);
+                    byte res = parseLineRequest(method, path, params, httpVersion);
 
                     if(res == PARSE_SUCCESS) {
                         //print results
                         Serial.println("Success!!!");
                         Serial.print("Method: "); Serial.println(method);
                         Serial.print("Path: "); Serial.println(path);
+                        Serial.print("Params string: "); Serial.println(params);
                         Serial.print("Version: "); Serial.println(httpVersion);
 
                         //assign values on request
                         req.method = method;
                         req.path = path;
                         req.httpVersion = httpVersion;
+                        parseQueryParams(params, req.params);
                     } else {
                         Serial.println("FAILED");
                     }
@@ -130,20 +133,20 @@ void WebServer::readLine(WiFiClient client) {
     client.readBytesUntil(WS_LINE_TERMINATOR, _lineBuffer, WS_LINE_BUFFER_SIZE);
 }
 
-// parse the HTTP method and path from the current line in _lineBuffer
-byte WebServer::parseLineRequest(char * method, char * path, char * version) {
+// parse the HTTP method, path, and query param strings from the current line in _lineBuffer
+byte WebServer::parseLineRequest(char * method, char * path, char * params, char* version) {
     // check matches
     MatchState ms;
     ms.Target(_lineBuffer);
-    char res = ms.Match("^(%u-) (%S-) (HTTP.*)");
+    char res = ms.Match("^(%u-) (%S-)?(%S-) (HTTP.*)");
 
     // process results
     switch(res) {
         case REGEXP_MATCHED: //match
             { // enclosing scope for variables created in this branch of the switch
                 int matchCount = ms.level;
-                if(matchCount != 3) { // unexpected number of matches
-                    Serial.print("Unexpected number of matches when parsing request line: expected >= 2, actual = ");
+                if(matchCount != 4) { // unexpected number of matches
+                    Serial.print("Unexpected number of matches when parsing request line: expected = 4, actual = ");
                     Serial.println(matchCount);
                     break;
                 }
@@ -151,7 +154,9 @@ byte WebServer::parseLineRequest(char * method, char * path, char * version) {
                 //get captured groups
                 ms.GetCapture(method, 0);
                 ms.GetCapture(path, 1);
-                ms.GetCapture(version, 2);
+                ms.GetCapture(params, 2);
+                ms.GetCapture(version, 3);
+
                 return PARSE_SUCCESS;
             }
             break;
@@ -164,6 +169,72 @@ byte WebServer::parseLineRequest(char * method, char * path, char * version) {
 
     // if we exit the switch statement before returning, that means there was a problem parsing.
     return PARSE_FAIL;
+};
+
+void WebServer::parseQueryParams(char* paramStr, QueryParam* dest) {
+    bool inKey = true;
+    char keyBuffer[REQ_PARAMS_STR_SIZE];
+    char valueBuffer[REQ_PARAMS_STR_SIZE];
+    QueryParam paramBuffer;
+    int bufferIndex = 0;
+    int paramIndex = 0;
+
+    //make sure buffers are empty to start
+    memset(keyBuffer, 0, REQ_PARAMS_STR_SIZE);
+    memset(valueBuffer, 0, REQ_PARAMS_STR_SIZE);
+
+    Serial.println("Parsing query params");
+
+    for(int i = 0; i < REQ_PARAMS_STR_SIZE; i++) {
+        char c = paramStr[i];
+        Serial.print("Current char: "); Serial.print(c);
+
+        //return if reached end of string
+        if(c == 0x00) {
+            Serial.println("..end");
+            //add last from buffer and return
+            dest[paramIndex] = QueryParam { String(keyBuffer), String(valueBuffer) };
+            return;
+        }
+
+        if(inKey) { // processing a key
+            Serial.print("..in key");
+            if(c == '=') {
+                Serial.println("..end of key");
+                // end of key
+                inKey = false;
+                bufferIndex = 0;
+            } else {
+                Serial.println("..add to buffer");
+                //add char to keyBuffer, and increment bufferIndex
+                keyBuffer[bufferIndex] = c;
+                bufferIndex++;
+            }
+        } else { // processing a value
+            Serial.print("..in value");
+            if(c == '&') {
+                Serial.println("..end of value");
+                // end of value
+                inKey = true;
+                //add QueryParam object
+                dest[paramIndex] = QueryParam { String(keyBuffer), String(valueBuffer) };
+
+                //clear buffers
+                memset(keyBuffer, 0x00, REQ_PARAMS_STR_SIZE);
+                memset(valueBuffer, 0x00, REQ_PARAMS_STR_SIZE);
+
+                //update indices
+                paramIndex++;
+                bufferIndex = 0;
+            } else {
+                Serial.println("..add to buffer");
+                //add char to valueBuffer and increment bufferIndex
+                valueBuffer[bufferIndex] = c;
+                bufferIndex++;
+            }
+        }
+
+    }
 };
 
 // parse an HTTP header from the current line in _lineBuffer
@@ -245,7 +316,6 @@ int WebResponse::addHeader(HttpHeader h) {
 // Attempt to send the response to the requesting client. Returns -1 for fail, 1 for success.
 int WebResponse::send() {
     if(client.connected()) {
-        Serial.println("Client connected");
         //send version and status line.
         client.println(httpVersion + " " + status);
 
