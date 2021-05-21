@@ -85,6 +85,7 @@ class WebRequest {
         HttpHeader headers[REQ_HEADER_COUNT];
 
         WebResponse getResponse();
+        bool getHeader(String, HttpHeader&);
 };
 
 // Web Server class, provides methods for processing and replying to incoming requests.

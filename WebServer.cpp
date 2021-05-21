@@ -289,6 +289,17 @@ WebResponse WebRequest::getResponse() {
     return res;
 };
 
+bool WebRequest::getHeader(String name, HttpHeader& dest) {
+    for(int i = 0; i < REQ_HEADER_COUNT; i++) {
+        HttpHeader curr = headers[i];
+        if(curr.key == name) {
+            dest = curr;
+            return true;
+        }
+    }
+    return false;
+}
+
 
 // ==== WebResponse ====
 
@@ -337,11 +348,9 @@ int WebResponse::send() {
 
         client.println(); // empty line to signify end of headers
 
-        // send body
-        client.print(body);
+        client.print(body);// send body
 
-        // wait for client to receive all data
-        delay(20);
+        delay(20); // wait for client to receive all data
 
         // close connection and return success
         client.stop();
