@@ -133,6 +133,12 @@ time_t getNTPTimeWrapper() {
 
 void registerRoutes() {
     router.get("/test", [](WebRequest& req, WebResponse& res) {
+        Serial.println("GET /test callback");
+        for(int i = 0; i < 4; i++) {
+            Serial.print("params["); Serial.print(i); Serial.print("].key = "); Serial.println(req.params[i].key);
+            Serial.print("params["); Serial.print(i); Serial.print("].value = "); Serial.println(req.params[i].value);
+        }
+
         res.addHeader("Header-Test", "Test header");
         res.body="Test body contents";
         res.send();
