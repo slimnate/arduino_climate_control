@@ -4,11 +4,14 @@
 #include <WiFiNINA.h>
 
 #include "secrets.h"
+
 #include "HumidityController.h"
 #include "LightController.h"
 #include "WifiController.h"
+
 #include "NTPClient.h"
 #include "WebServer.h"
+#include "Router.h"
 
 const int MINUTES = 60;
 
@@ -39,8 +42,10 @@ WiFiUDP udp;
 NTPClient ntp = NTPClient(udp);
 
 WebServer server;
+Router router;
 
 time_t getNTPTimeWrapper();
+void registerRoutes();
 
 void setup()
 {
@@ -105,31 +110,31 @@ void setup()
 
     //start web server
     server = WebServer(); // initialize web server with no port defaults to port 80.
+    registerRoutes();
     server.listen();
-}
+};
 
 void loop()
 {
     //process incoming http requests each loop
     WebRequest req;
-
     if(server.processIncomingRequest(req) == 1) {
         Serial.println("Loop - responding to request...");
-
-        WebResponse res = req.getResponse();
-
-        res.addHeader("Test", "This is a test header");
-        res.body = "this is a test response body";
-
-        res.send();
+        router.handle(req);
     }
-
     
-
     //check alarms twice per second
     Alarm.delay(500);
-}
+};
 
 time_t getNTPTimeWrapper() {
     return ntp.getNTPTime();
+};
+
+void registerRoutes() {
+    router.get("/test", [](WebRequest& req, WebResponse& res) {
+        res.addHeader("Header-Test", "Test header");
+        res.body="Test body contents";
+        res.send();
+    });
 };
