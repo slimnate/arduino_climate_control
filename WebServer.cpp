@@ -321,11 +321,16 @@ bool WebRequest::getHeader(String name, HttpHeader& dest) {
 
 // ==== WebResponse ====
 
+int WebResponse::addHeader(char* key, long value) {
+    char valueStr[32];
+    itoa(value, valueStr, 10);
+    HttpHeader h {key, valueStr};
+    return addHeader(h);
+}
+
 // Add a new header to the header list. Returns 1 for success, returns -1 if error.
-int WebResponse::addHeader(char * key, char * value) {
-    HttpHeader h;
-    h.key = key;
-    h.value = value;
+int WebResponse::addHeader(char* key, char* value) {
+    HttpHeader h {key, value};
     return addHeader(h);
 };
 

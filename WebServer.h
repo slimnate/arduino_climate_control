@@ -68,6 +68,7 @@ class WebResponse {
 
         int addHeader(HttpHeader); // add new header to header list
         int addHeader(char*, char*); // add new header to header list with basic strings (key, value)
+        int addHeader(char*, long); // add numerical header, automatically parsing number to string
 
         int send(); // send the response to the client
 
