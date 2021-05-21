@@ -19,7 +19,7 @@ void WebServer::listen() {
 };
 
 // process next incoming request, updating provided WebRequest object.
-int WebServer::processIncomingRequest(WebRequest & req) {
+int WebServer::processIncomingRequest(WebRequest& req) {
     // get incoming client requests
     WiFiClient client = _server.available();
 
@@ -134,29 +134,47 @@ void WebServer::readLine(WiFiClient client) {
 }
 
 // parse the HTTP method, path, and query param strings from the current line in _lineBuffer
-byte WebServer::parseLineRequest(char * method, char * path, char * params, char* version) {
+byte WebServer::parseLineRequest(char* method, char* path, char* params, char* version) {
     // check matches
     MatchState ms;
+    char* regexParams = "^(%u-) (%S-)%?(%S-) (HTTP.*)";
+    char* regexNoParams = "^(%u-) (%S-) (HTTP.*)";
+    int res;
+    int expectedMatches;
+
     ms.Target(_lineBuffer);
-    char res = ms.Match("^(%u-) (%S-)?(%S-) (HTTP.*)");
+    if(String(_lineBuffer).indexOf('?') > 0){
+        res = ms.Match(regexParams);
+        expectedMatches = 4;
+    } else {
+        res = ms.Match(regexNoParams);
+        expectedMatches = 3;
+    }
+    
 
     // process results
     switch(res) {
         case REGEXP_MATCHED: //match
             { // enclosing scope for variables created in this branch of the switch
                 int matchCount = ms.level;
-                if(matchCount != 4) { // unexpected number of matches
+                if(matchCount != expectedMatches) { // unexpected number of matches
                     Serial.print("Unexpected number of matches when parsing request line: expected = 4, actual = ");
                     Serial.println(matchCount);
                     break;
                 }
                 
                 //get captured groups
-                ms.GetCapture(method, 0);
-                ms.GetCapture(path, 1);
-                ms.GetCapture(params, 2);
-                ms.GetCapture(version, 3);
-
+                if(expectedMatches == 4) {
+                    ms.GetCapture(method, 0);
+                    ms.GetCapture(path, 1);
+                    ms.GetCapture(params, 2);
+                    ms.GetCapture(version, 3);
+                } else {
+                    ms.GetCapture(method, 0);
+                    ms.GetCapture(path, 1);
+                    ms.GetCapture(version, 2);
+                }
+                
                 return PARSE_SUCCESS;
             }
             break;
@@ -238,7 +256,7 @@ void WebServer::parseQueryParams(char* paramStr, QueryParam* dest) {
 };
 
 // parse an HTTP header from the current line in _lineBuffer
-byte WebServer::parseLineHeader(char * key, char * value) {
+byte WebServer::parseLineHeader(char* key, char* value) {
     MatchState ms;
     ms.Target(_lineBuffer);
     char res = ms.Match("^(.-): (.*)");
