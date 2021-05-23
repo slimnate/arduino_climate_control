@@ -287,6 +287,7 @@ byte WebServer::parseLineHeader(char* key, char* value) {
     return PARSE_FAIL;
 };
 
+
 // ==== WebRequest ====
 
 //return a WebResponse object that can be used to reply to the incoming request
@@ -321,16 +322,22 @@ bool WebRequest::getHeader(String name, HttpHeader& dest) {
 
 // ==== WebResponse ====
 
-int WebResponse::addHeader(char* key, long value) {
+int WebResponse::addHeader(const char* key, const float value) {
+    HttpHeader h { key, String(value, 10) };
+    return addHeader(h);
+};
+
+int WebResponse::addHeader(const char* key, const long value) {
+    String(value, 10);
     char valueStr[32];
     itoa(value, valueStr, 10);
-    HttpHeader h {key, valueStr};
+    HttpHeader h { key, valueStr };
     return addHeader(h);
-}
+};
 
 // Add a new header to the header list. Returns 1 for success, returns -1 if error.
-int WebResponse::addHeader(char* key, char* value) {
-    HttpHeader h {key, value};
+int WebResponse::addHeader(const char* key, const char* value) {
+    HttpHeader h { key, value };
     return addHeader(h);
 };
 

@@ -25,6 +25,7 @@ class LightController {
         static void update();
         static void enableLights(DayNight);
         static DayNight getStatus();
+        static const char* getStatusString();
 };
 
 #endif

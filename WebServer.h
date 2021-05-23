@@ -48,6 +48,9 @@ const char HTTP_SERVER_ERROR[]      = "500 Internal Server Error"; // The server
 struct HttpHeader {
     String key;
     String value;
+
+    int valueAsInt();
+    float valueAsFloat();
 };
 
 // represents a request query parameter
@@ -67,8 +70,9 @@ class WebResponse {
         HttpHeader headers[REQ_HEADER_COUNT];
 
         int addHeader(HttpHeader); // add new header to header list
-        int addHeader(char*, char*); // add new header to header list with basic strings (key, value)
-        int addHeader(char*, long); // add numerical header, automatically parsing number to string
+        int addHeader(const char*, const char*); // add new header to header list with basic strings (key, value)
+        int addHeader(const char*, const long); // add numerical header, automatically parsing number to string
+        int addHeader(const char*, const float); // add floating point numerical header, auto parsing to string
 
         int send(); // send the response to the client
 

@@ -101,3 +101,11 @@ float HumidityController::averageHumidity() {
 
     return avg;
 };
+
+void HumidityController::status(float& avg, float& one, float& two, bool& aEnabled, bool& fEnabled) {
+    avg = averageHumidity();
+    one = sensorOne.getHumidity();
+    two = sensorTwo.getTemperature();
+    aEnabled = atomizer.isEnabled();
+    fEnabled = fans.isEnabled();
+};

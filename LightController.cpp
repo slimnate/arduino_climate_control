@@ -63,6 +63,10 @@ DayNight LightController::getStatus() {
     return status;
 };
 
+const char* LightController::getStatusString() {
+    return status == DAY ? "day" : "night";
+};
+
 void LightController::enableLights(DayNight newStatus) {
     //update light control pins
     if(newStatus == DAY) {

@@ -38,6 +38,8 @@ class HumidityController {
         static void runHumidifier();
         static void stopAtomizer();
         static void stopFans();
+
+        static void status(float&, float&, float&, bool&, bool&);
 };
 
 #endif

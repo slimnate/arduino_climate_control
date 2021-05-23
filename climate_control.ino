@@ -34,6 +34,27 @@ const byte PIN_CTRL_FANS = 8;
 const byte PIN_RELAY_DAY = 10;
 const byte PIN_RELAY_NIGHT = 12;
 
+
+const char* HEAD_TIME_UTC    = "x-Time-UTC";
+const char* HEAD_TIME_YEAR   = "x-Time-Year";
+const char* HEAD_TIME_MONTH  = "x-Time-Month";
+const char* HEAD_TIME_DAY    = "x-Time-Day";
+const char* HEAD_TIME_HOUR   = "x-Time-Hour";
+const char* HEAD_TIME_MINUTE = "x-Time-Minute";
+const char* HEAD_TIME_SECOND = "x-Time-Second";
+
+const char* HEAD_HUMIDITY_TARGET   = "x-Humidity-Target";
+const char* HEAD_HUMIDITY_KICKON   = "x-Humidity-KickOn";
+const char* HEAD_HUMIDITY_FAN_STOP = "x-Humidity-FanStopDelay";
+const char* HEAD_HUMIDITY_UPDATE   = "x-Humidity-UpdateInterval";
+const char* HEAD_HUMIDITY_AVERAGE  = "x-Humidity-Average";
+const char* HEAD_HUMIDITY_ONE      = "x-Humidity-SensorOne";
+const char* HEAD_HUMIDITY_TWO      = "x-Humidity-SensorTwo";
+const char* HEAD_HUMIDITY_FANS     = "x-Humidity-Fans";
+const char* HEAD_HUMIDITY_ATOMIZER = "x-Humidity-Atomizer";
+
+const char* HEAD_LIGHT_MODE = "x-Lights-Mode";
+
 HumidityControllerSettings* humidityControllerSettings;
 LightControllerSettings* lightControllerSettings;
 WifiControllerSettings* wifiControllersettings;
@@ -54,7 +75,7 @@ void setup()
     while (!Serial) {
         ;
     }
-/*
+
 	// set up humidity controller (sensors, atomizer and fan control)
     humidityControllerSettings = new HumidityControllerSettings(
         HUMIDITY_TARGET_DEFAULT,
@@ -85,7 +106,7 @@ void setup()
         PIN_RELAY_NIGHT,
         lightControllerSettings
     );
-*/
+
     //set up wifi connection
     Serial.println("==========Initializing wifi==========");
     wifiControllersettings = new WifiControllerSettings(
@@ -132,6 +153,7 @@ time_t getNTPTimeWrapper() {
 };
 
 void registerRoutes() {
+    // test route for testing query params
     router.get("/test", [](WebRequest& req, WebResponse& res) {
         Serial.println("GET /test callback");
         for(int i = 0; i < 4; i++) {
@@ -141,6 +163,107 @@ void registerRoutes() {
 
         res.addHeader("Header-Test", "Test header");
         res.body="Test body contents";
+        res.send();
+    });
+
+    //get server time
+    router.get("/time", [](WebRequest& req, WebResponse& res){
+        res.addHeader(HEAD_TIME_UTC, (long)now());
+        res.addHeader(HEAD_TIME_YEAR, (long)year());
+        res.addHeader(HEAD_TIME_MONTH, (long)month());
+        res.addHeader(HEAD_TIME_DAY, (long)day());
+        res.addHeader(HEAD_TIME_HOUR, (long)hour());
+        res.addHeader(HEAD_TIME_MINUTE, (long)minute());
+        res.addHeader(HEAD_TIME_SECOND, (long)second());
+
+        res.send();
+    });
+
+    // get humidity settings
+    router.get("/humidity/settings", [](WebRequest& req, WebResponse& res){
+        res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
+        res.addHeader(HEAD_HUMIDITY_KICKON, humidityControllerSettings->kickOnHumidity);
+        res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
+        res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
+
+        res.send();
+    });
+
+    //update humidity settings
+    router.post("/humidity/settings", [](WebRequest& req, WebResponse& res){
+        HttpHeader target, kickOn, fanStop, updateInterval;
+        byte valuesProvided = 0b0000; // bitflag to indicate which values should be updated
+
+        //get relevant headers and set flag bits when found
+        if (req.getHeader(HEAD_HUMIDITY_TARGET, target)) valuesProvided |= 0b1000;
+        if (req.getHeader(HEAD_HUMIDITY_KICKON, kickOn)) valuesProvided |= 0b0100;
+        if (req.getHeader(HEAD_HUMIDITY_FAN_STOP, fanStop)) valuesProvided |= 0b0010;
+        if (req.getHeader(HEAD_HUMIDITY_UPDATE, updateInterval)) valuesProvided |= 0b0001;
+
+        if(valuesProvided == 0b0000) {
+            //return 400 BadRequest unless at least one new value provided
+            res.status = HTTP_BAD_REQUEST;
+            res.body = "No update values provided, unable to process request.";
+        } else {
+            if(valuesProvided & 0b1000) {
+                //update target humidity
+                Serial.println("Updating target humidity");
+                humidityControllerSettings->targetHumidity = target.value.toFloat();
+                res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
+            }
+            if(valuesProvided & 0b0100) {
+                //update kickon humidity
+                Serial.println("Updating kickon humidity");
+                humidityControllerSettings->kickOnHumidity = kickOn.value.toFloat();
+                res.addHeader(HEAD_HUMIDITY_KICKON, humidityControllerSettings->kickOnHumidity);
+            }
+            if(valuesProvided & 0b0010) {
+                //update fan stop delay
+                Serial.println("Updating fan stop delay");
+                humidityControllerSettings->fanStopDelay = fanStop.value.toInt();
+                res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
+            }
+            if(valuesProvided & 0b0001) {
+                //update humidity update check interval
+                Serial.println("Updating ");
+                humidityControllerSettings->fanStopDelay = updateInterval.value.toInt();
+                res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
+            }
+        }
+    });
+
+    //get humidity status - humidity values and enabled status of fans and atomizers
+    router.get("/humidity/status", [](WebRequest& req, WebResponse& res){
+        float average, sensorOne, sensorTwo;
+        bool fansEnabled, atomizerEnabled;
+        HumidityController::status(average, sensorOne, sensorTwo, fansEnabled, atomizerEnabled);
+        
+        res.addHeader(HEAD_HUMIDITY_AVERAGE, average);
+        res.addHeader(HEAD_HUMIDITY_ONE, sensorOne);
+        res.addHeader(HEAD_HUMIDITY_TWO, sensorTwo);
+        res.addHeader(HEAD_HUMIDITY_FANS, fansEnabled ? "enabled" : "disabled");
+        res.addHeader(HEAD_HUMIDITY_ATOMIZER, atomizerEnabled ? "enabled" : "disabled");
+
+        res.send();
+    });
+
+    router.get("/lights/schedule", [](WebRequest& req, WebResponse& res){
+        res.status = HTTP_NOT_FOUND;
+        res.body = "Route: GET /lights/schedule not yet implemented";
+
+        res.send();
+    });
+
+    router.post("/lights/schedule", [](WebRequest& req, WebResponse& res){
+        res.status = HTTP_NOT_FOUND;
+        res.body = "Route: POST /lights/schedule not yet implemented";
+        
+        res.send();
+    });
+
+    router.get("/lights/status", [](WebRequest& req, WebResponse& res){
+        res.addHeader(HEAD_LIGHT_MODE, LightController::getStatusString());
+
         res.send();
     });
 };
