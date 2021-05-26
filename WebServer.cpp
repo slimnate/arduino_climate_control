@@ -92,6 +92,7 @@ int WebServer::processIncomingRequest(WebRequest& req) {
                     h.key = headerKey;
                     h.value = headerValue;
                     req.headers[headerIndex] = h;
+                    headerIndex++;
 
                     // check for content length header and update local var
                     if(strcmp(headerKey, "Content-Length") == 0) {
