@@ -122,8 +122,10 @@ int WebServer::processIncomingRequest(WebRequest& req) {
 
             } //end if (client.available())
 
-        } //end while(client.connected())
+            i++;
+            Serial.print("End loop - i = "); Serial.println(i);
 
+        } //end while(client.connected())
     } //end if (client)
     return -1; // return fail if no incoming requests
 };
