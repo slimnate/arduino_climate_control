@@ -13,19 +13,7 @@
 #include "WebServer.h"
 #include "Router.h"
 
-const int MINUTES = 60;
-
-const float HUMIDITY_TARGET_DEFAULT = 90.0; // target 90% humidity
-const float HUMIDITY_KICKON_DEFAULT = 75.0; // start when below 75% humidity
-const int HUMIDITY_FAN_STOP_DEFAULT = 20; // fans run for 15 seconds after atomizer stops
-const int HUMIDITY_UPDATE_DEFAULT = 10; // update humidity every 10 seconds by default
-
-const Time LIGHT_DAY_START_DEFAULT = Time(07,00,00); //day start 7am
-const Time LIGHT_NIGHT_START_DEFAULT = Time(19,00,00); //night start 7pm
-const int LIGHT_UPDATE_DEFAULT = 1 * MINUTES; // update lights every 1 minutes by default
-
-const bool WIFI_REQUIRE_LATEST_FIRMWARE = false;
-const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * MINUTES;
+// control pins
 
 const byte PIN_DHT22_ONE = 2;
 const byte PIN_DHT22_TWO = 4;
@@ -34,6 +22,21 @@ const byte PIN_CTRL_FANS = 8;
 const byte PIN_RELAY_DAY = 10;
 const byte PIN_RELAY_NIGHT = 12;
 
+// settings defaults
+
+const float HUMIDITY_TARGET_DEFAULT = 90.0; // target 90% humidity
+const float HUMIDITY_KICKON_DEFAULT = 75.0; // start when below 75% humidity
+const int HUMIDITY_FAN_STOP_DEFAULT = 20; // fans run for 15 seconds after atomizer stops
+const int HUMIDITY_UPDATE_DEFAULT = 10; // update humidity every 10 seconds by default
+
+const Time LIGHT_DAY_START_DEFAULT = Time(07,00,00); //day start 7am
+const Time LIGHT_NIGHT_START_DEFAULT = Time(19,00,00); //night start 7pm
+const int LIGHT_UPDATE_DEFAULT = 1 * SECS_PER_MIN; // update lights every 1 minutes by default
+
+const bool WIFI_REQUIRE_LATEST_FIRMWARE = false;
+const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * SECS_PER_MIN;
+
+// web server headers
 
 const char* HEAD_TIME_UTC    = "x-Time-UTC";
 const char* HEAD_TIME_YEAR   = "x-Time-Year";
@@ -65,9 +68,12 @@ NTPClient ntp = NTPClient(udp);
 WebServer server;
 Router router;
 
-time_t getNTPTimeWrapper();
+// global functions
+
+time_t timeProvider();
 void registerRoutes();
 
+// Arduino setup functions
 void setup()
 {
     //init serial
@@ -77,6 +83,7 @@ void setup()
     }
 
 	// set up humidity controller (sensors, atomizer and fan control)
+    Serial.println("==========Initializing humidity controller==========");
     humidityControllerSettings = new HumidityControllerSettings(
         HUMIDITY_TARGET_DEFAULT,
         HUMIDITY_KICKON_DEFAULT,
@@ -91,7 +98,8 @@ void setup()
         humidityControllerSettings
     );
 
-    //set up light controller (timer and relays)
+    // set up light controller (timer and relays)
+    Serial.println("==========Initializing light controller==========");
     lightControllerSettings = new LightControllerSettings(
         new FixedSchedule(
             new ScheduleEntry(
@@ -107,7 +115,7 @@ void setup()
         lightControllerSettings
     );
 
-    //set up wifi connection
+    // set up wifi connection
     Serial.println("==========Initializing wifi==========");
     wifiControllersettings = new WifiControllerSettings(
         SECRET_SSID,
@@ -118,23 +126,26 @@ void setup()
     WifiController::init(wifiControllersettings);
 
 
-    //set up NTP provider
+    // set up NTP provider
+    Serial.println("==========Initializing NTP==========");
     ntp.initUdp();
-    setSyncProvider(getNTPTimeWrapper);
-    setSyncInterval(5 * MINUTES); //update every 5 min
+    setSyncProvider(timeProvider);
+    setSyncInterval(5 * SECS_PER_MIN); //update every 5 min
 
-    //print date and time on startup
+    // print date and time on startup
     Date today = Date(year(), (byte)month(), (byte)day());
     Time now = Time((byte)hour(), (byte)minute(), (byte)second());
     Serial.println("Date: "); today.printSerial();
     Serial.println("Time: "); now.printSerial();
 
-    //start web server
+    // start web server
+    Serial.println("==========Initializing Web Server==========");
     server = WebServer(); // initialize web server with no port defaults to port 80.
     registerRoutes();
     server.listen();
 };
 
+// Arduino loop function
 void loop()
 {
     //process incoming http requests each loop
@@ -148,7 +159,8 @@ void loop()
     Alarm.delay(500);
 };
 
-time_t getNTPTimeWrapper() {
+// Time provider functions
+time_t timeProvider() {
     return ntp.getNTPTime();
 };
 
@@ -178,6 +190,8 @@ void registerRoutes() {
 
         res.send();
     });
+
+    // ========== Humididty controller routes ==========
 
     // get humidity settings
     router.get("/humidity/settings", [](WebRequest& req, WebResponse& res){
@@ -225,7 +239,7 @@ void registerRoutes() {
             }
             if(valuesProvided & 0b0001) {
                 //update humidity update check interval
-                Serial.println("Updating ");
+                Serial.println("Updating humidity check interval");
                 humidityControllerSettings->fanStopDelay = updateInterval.value.toInt();
                 res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
             }
