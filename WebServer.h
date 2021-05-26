@@ -45,12 +45,13 @@ const char HTTP_SERVER_ERROR[]      = "500 Internal Server Error"; // The server
 
 
 // struct to hold HTTP Header key/value pairs
-struct HttpHeader {
-    String key;
-    String value;
+class HttpHeader {
+    public:
+        String key;
+        String value;
 
-    int valueAsInt();
-    float valueAsFloat();
+        int valueAsInt();
+        float valueAsFloat();
 };
 
 // represents a request query parameter
@@ -61,7 +62,7 @@ struct QueryParam {
 
 class WebResponse {
     private:
-        byte _currentHeaderIndex = 0;
+        int _currentHeaderIndex = 0;
     public:
         WiFiClient client;
         String status;
