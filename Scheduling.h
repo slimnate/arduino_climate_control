@@ -18,6 +18,7 @@ struct ScheduleEntry {
 //abstract Schedule class
 struct Schedule {
     virtual ScheduleEntry* getEntry(Date) = 0;
+    virtual void print();
 };
 
 //fixed schedule implementation
@@ -26,6 +27,7 @@ struct FixedSchedule : public Schedule {
 
     FixedSchedule(ScheduleEntry*);
     ScheduleEntry* getEntry(Date);
+    void print();
 };
 
 //monthly schedule implementation
@@ -34,6 +36,7 @@ struct MonthlySchedule : public Schedule {
 
     MonthlySchedule(ScheduleEntry*[12]);
     ScheduleEntry* getEntry(Date);
+    void print();
 };
 
 //TODO: other schedule implementations

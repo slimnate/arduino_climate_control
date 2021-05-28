@@ -42,7 +42,18 @@ FixedSchedule::FixedSchedule(ScheduleEntry* entry) {
 ScheduleEntry* FixedSchedule::getEntry(Date d) {
     //ignores the date passed and always returns the same entry
     return entry;
-}
+};
+
+void FixedSchedule::print() {
+    Serial.print("Day Start = ");
+    Serial.print(entry->dayStart.hours); Serial.print(":");
+    Serial.print(entry->dayStart.minutes); Serial.print(":");
+    Serial.print(entry->dayStart.seconds); Serial.println();
+    Serial.print("Night Start = ");
+    Serial.print(entry->nightStart.hours); Serial.print(":");
+    Serial.print(entry->nightStart.minutes); Serial.print(":");
+    Serial.print(entry->nightStart.seconds); Serial.println();
+};
 
 
 //MonthlySchedule implementation
@@ -54,4 +65,20 @@ MonthlySchedule::MonthlySchedule(ScheduleEntry* sched[12]) {
 
 ScheduleEntry* MonthlySchedule::getEntry(Date d) {
     return schedules[d.month-1];
-}
+};
+
+void MonthlySchedule::print() {
+    ScheduleEntry* entry;
+    for(int i=0; i<12; i++) {
+        entry = schedules[i];
+        Serial.print("Month "); Serial.print(i); Serial.println(": ");
+        Serial.print("Day Start = ");
+        Serial.print(entry->dayStart.hours); Serial.print(":");
+        Serial.print(entry->dayStart.minutes); Serial.print(":");
+        Serial.print(entry->dayStart.seconds); Serial.println();
+        Serial.print("Night Start = ");
+        Serial.print(entry->nightStart.hours); Serial.print(":");
+        Serial.print(entry->nightStart.minutes); Serial.print(":");
+        Serial.print(entry->nightStart.seconds); Serial.println();
+    }
+};

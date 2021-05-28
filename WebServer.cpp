@@ -4,7 +4,6 @@
 #include "Regexp.h"
 #include "WiFiNINA.h"
 
-
 // ==== WebServer ====
 
 //create WebServer with default port
@@ -106,8 +105,9 @@ int WebServer::processIncomingRequest(WebRequest& req) {
 
                 //parse body line
                 } else if (_lineMode == LINE_MODE_BODY) {
-                    Serial.println("Processing body line...");
+                    Serial.println("Processing body...");
                     char body[REQ_BODY_SIZE];
+                    memset(body, 0, REQ_BODY_SIZE); // clear body buffer
 
                     client.readBytes(body, contentLength);
 

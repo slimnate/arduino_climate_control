@@ -49,9 +49,6 @@ class HttpHeader {
     public:
         String key;
         String value;
-
-        int valueAsInt();
-        float valueAsFloat();
 };
 
 // represents a request query parameter

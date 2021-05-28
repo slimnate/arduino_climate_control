@@ -2,6 +2,7 @@
 #include <TimeAlarms.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
+#include <Regexp.h>
 
 #include "secrets.h"
 
@@ -12,6 +13,7 @@
 #include "NTPClient.h"
 #include "WebServer.h"
 #include "Router.h"
+#include "Lines.h"
 
 // control pins
 
@@ -56,11 +58,18 @@ const char* HEAD_HUMIDITY_TWO      = "x-Humidity-SensorTwo";
 const char* HEAD_HUMIDITY_FANS     = "x-Humidity-Fans";
 const char* HEAD_HUMIDITY_ATOMIZER = "x-Humidity-Atomizer";
 
-const char* HEAD_LIGHT_MODE = "x-Lights-Mode";
+const char* HEAD_LIGHT_MODE        = "x-Light-Mode"; // current light mode (day/night)
+const char* HEAD_LS_TYPE           = "x-Light-Schedule-Type"; // light schedule type (fixed, monthly, etc.)
+
+const int SCHED_TYPE_FIXED   = 1;
+const int SCHED_TYPE_MONTHLY = 2;
+
+// global vars
 
 HumidityControllerSettings* humidityControllerSettings;
 LightControllerSettings* lightControllerSettings;
 WifiControllerSettings* wifiControllersettings;
+Schedule* lightControllerSchedule;
 
 WiFiUDP udp;
 NTPClient ntp = NTPClient(udp);
@@ -72,6 +81,8 @@ Router router;
 
 time_t timeProvider();
 void registerRoutes();
+bool updateFixedSchedule(String);
+bool updateMonthlySchedule(String);
 
 // Arduino setup functions
 void setup()
@@ -100,13 +111,14 @@ void setup()
 
     // set up light controller (timer and relays)
     Serial.println("==========Initializing light controller==========");
+    lightControllerSchedule = new FixedSchedule(
+        new ScheduleEntry(
+            LIGHT_DAY_START_DEFAULT,
+            LIGHT_NIGHT_START_DEFAULT
+        )
+    );
     lightControllerSettings = new LightControllerSettings(
-        new FixedSchedule(
-            new ScheduleEntry(
-                LIGHT_DAY_START_DEFAULT,
-                LIGHT_NIGHT_START_DEFAULT
-            )
-        ),
+        lightControllerSchedule,
         LIGHT_UPDATE_DEFAULT
     );
     LightController::init(
@@ -162,6 +174,116 @@ void loop()
 // Time provider functions
 time_t timeProvider() {
     return ntp.getNTPTime();
+};
+
+bool updateFixedSchedule(String body) {
+    Serial.println("Updating fixed schedule...");
+    char bodyChars[body.length()+1];
+    char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
+    int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
+    MatchState ms;
+
+    // perform matching
+    memset(bodyChars,0,body.length()+1);
+    Serial.println(body);
+    Serial.println(body.length());
+    body.toCharArray(bodyChars, body.length()+1, 0);
+
+    ms.Target(bodyChars);
+    int res = ms.Match("D{(%d%d):(%d%d):(%d%d)}N{(%d%d):(%d%d):(%d%d)}", 0); // (%d%d):(%d%d):(%d%d)
+    Serial.println(res);
+    Serial.println(ms.level);
+    if(res != REGEXP_MATCHED) {
+        Serial.print("error matching: "); Serial.println(res);
+        return false;
+    }
+    if(ms.level != 6) {
+        Serial.println("not enough matches");
+        return false;
+    }
+
+    // capture matches
+    ms.GetCapture(sDayHour, 0);
+    ms.GetCapture(sDayMin, 1);
+    ms.GetCapture(sDaySec, 2);
+    ms.GetCapture(sNightHour, 3);
+    ms.GetCapture(sNightMin, 4);
+    ms.GetCapture(sNightSec, 5);
+
+    // convert to ints
+    dayHour = String(sDayHour).toInt();
+    dayMin = String(sDayMin).toInt();
+    daySec = String(sDaySec).toInt();
+    nightHour = String(sNightHour).toInt();
+    nightMin = String(sNightMin).toInt();
+    nightSec = String(sNightSec).toInt();
+
+    // update schedule
+    Serial.println("updating");
+    lightControllerSchedule = new FixedSchedule(
+        new ScheduleEntry(
+            Time(dayHour, dayMin, daySec),
+            Time(nightHour, nightMin, nightSec)
+        )
+    );
+
+    return true;
+};
+
+bool updateMonthlySchedule(String body) {
+    Serial.println("a");
+    char line[LINE_SIZE];
+    Serial.println("b");
+    char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
+    Serial.println("c");
+    int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
+    Serial.println("d");
+    MatchState ms;
+    Serial.println("e");
+    ScheduleEntry* entries[LINE_COUNT];
+    Serial.println("f");
+    Lines lines = Lines::split(body.c_str());
+    Serial.println("g");
+    lines.printLines();
+
+    for(int i = 0; i < LINE_COUNT; i++) {
+        // get line and match
+        Serial.print("Checking line: "); Serial.println(i);
+        lines.getLine(line, i);
+        Serial.println(line);
+        ms.Target(line);
+        char res = ms.Match("D{(%d%d):(%d%d):(%d%d)}N{(%d%d):(%d%d):(%d%d)}", 0);
+
+        if(res != REGEXP_MATCHED) {
+            Serial.print("error matching: "); Serial.println(res);
+            return false;
+        }
+        if(ms.level != 6) {
+            Serial.println("not enough matches");
+            return false;
+        }
+
+        // capture matches
+        ms.GetCapture(sDayHour, 0);
+        ms.GetCapture(sDayMin, 1);
+        ms.GetCapture(sDaySec, 2);
+        ms.GetCapture(sNightHour, 3);
+        ms.GetCapture(sNightMin, 4);
+        ms.GetCapture(sNightSec, 5);
+
+        // convert to ints
+        dayHour = String(sDayHour).toInt();
+        dayMin = String(sDayMin).toInt();
+        daySec = String(sDaySec).toInt();
+        nightHour = String(sNightHour).toInt();
+        nightMin = String(sNightMin).toInt();
+        nightSec = String(sNightSec).toInt();
+
+        entries[i] = new ScheduleEntry(Time(dayHour, dayMin, daySec), Time(nightHour, nightMin, nightSec));
+    }
+
+    lightControllerSchedule = new MonthlySchedule(entries);
+    return true;
 };
 
 void registerRoutes() {
@@ -262,17 +384,59 @@ void registerRoutes() {
     });
 
     router.get("/lights/schedule", [](WebRequest& req, WebResponse& res){
-        res.status = HTTP_NOT_FOUND;
-        res.body = "Route: GET /lights/schedule not yet implemented";
-
-        res.send();
+        
     });
 
     router.post("/lights/schedule", [](WebRequest& req, WebResponse& res){
-        res.status = HTTP_NOT_FOUND;
-        res.body = "Route: POST /lights/schedule not yet implemented";
-        
-        res.send();
+        HttpHeader schedType;
+        bool validSchedProvided = false;
+        int schedTypeCode = 0;
+        Serial.println(req.body);
+
+        // check schedule type header is valid
+        if(req.getHeader(HEAD_LS_TYPE, schedType)) {
+            schedTypeCode = schedType.value.toInt();
+            if(schedTypeCode >= 1 && schedTypeCode <= 2) {
+                validSchedProvided = true;
+            }
+        }
+
+        if(validSchedProvided) {
+            bool updateSucceeded = false;
+            // check which type we're updating to.
+            switch(schedTypeCode) {
+                case SCHED_TYPE_FIXED:
+                {
+                    Serial.println("fixed");
+                    // update fixed schedule
+                    updateSucceeded = updateFixedSchedule(req.body);
+                    break;
+                }
+                case SCHED_TYPE_MONTHLY:
+                {
+                    Serial.println("monthly");
+                    // update monthly schedule
+                    updateSucceeded = updateMonthlySchedule(req.body);
+                    break;
+                }
+            }
+
+            if(updateSucceeded) {
+                Serial.println("Success updating schedule");
+                lightControllerSchedule->print();
+            } else {
+                Serial.println("Failed to update schedule");
+                res.status = HTTP_SERVER_ERROR;
+            }
+
+            // send response
+            res.send();
+        } else {
+            // return bad formatted request
+            res.status = HTTP_BAD_REQUEST;
+            res.body = "Invalid request, unable to parse";
+            res.send();
+        }
     });
 
     router.get("/lights/status", [](WebRequest& req, WebResponse& res){
