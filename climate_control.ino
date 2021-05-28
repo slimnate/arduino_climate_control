@@ -13,6 +13,7 @@
 #include "NTPClient.h"
 #include "WebServer.h"
 #include "Router.h"
+#include "Bitflag.h"
 #include "Lines.h"
 
 // control pins
@@ -40,16 +41,16 @@ const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * SECS_PER_MIN;
 
 // web server headers
 
-const char* HEAD_TIME_UTC    = "x-Time-UTC";
-const char* HEAD_TIME_YEAR   = "x-Time-Year";
-const char* HEAD_TIME_MONTH  = "x-Time-Month";
-const char* HEAD_TIME_DAY    = "x-Time-Day";
-const char* HEAD_TIME_HOUR   = "x-Time-Hour";
-const char* HEAD_TIME_MINUTE = "x-Time-Minute";
-const char* HEAD_TIME_SECOND = "x-Time-Second";
+const char* HEAD_TIME_UTC          = "x-Time-UTC";
+const char* HEAD_TIME_YEAR         = "x-Time-Year";
+const char* HEAD_TIME_MONTH        = "x-Time-Month";
+const char* HEAD_TIME_DAY          = "x-Time-Day";
+const char* HEAD_TIME_HOUR         = "x-Time-Hour";
+const char* HEAD_TIME_MINUTE       = "x-Time-Minute";
+const char* HEAD_TIME_SECOND       = "x-Time-Second";
 
 const char* HEAD_HUMIDITY_TARGET   = "x-Humidity-Target";
-const char* HEAD_HUMIDITY_KICKON   = "x-Humidity-KickOn";
+const char* HEAD_HUMIDITY_KICK_ON  = "x-Humidity-KickOn";
 const char* HEAD_HUMIDITY_FAN_STOP = "x-Humidity-FanStopDelay";
 const char* HEAD_HUMIDITY_UPDATE   = "x-Humidity-UpdateInterval";
 const char* HEAD_HUMIDITY_AVERAGE  = "x-Humidity-Average";
@@ -318,7 +319,7 @@ void registerRoutes() {
     // get humidity settings
     router.get("/humidity/settings", [](WebRequest& req, WebResponse& res){
         res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
-        res.addHeader(HEAD_HUMIDITY_KICKON, humidityControllerSettings->kickOnHumidity);
+        res.addHeader(HEAD_HUMIDITY_KICK_ON, humidityControllerSettings->kickOnHumidity);
         res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
         res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
 
@@ -328,44 +329,54 @@ void registerRoutes() {
     //update humidity settings
     router.post("/humidity/settings", [](WebRequest& req, WebResponse& res){
         HttpHeader target, kickOn, fanStop, updateInterval;
-        byte valuesProvided = 0b0000; // bitflag to indicate which values should be updated
+        Bitflag valuesProvided; // bitflag to indicate which values should be updated
 
         //get relevant headers and set flag bits when found
-        if (req.getHeader(HEAD_HUMIDITY_TARGET, target)) valuesProvided |= 0b1000;
-        if (req.getHeader(HEAD_HUMIDITY_KICKON, kickOn)) valuesProvided |= 0b0100;
-        if (req.getHeader(HEAD_HUMIDITY_FAN_STOP, fanStop)) valuesProvided |= 0b0010;
-        if (req.getHeader(HEAD_HUMIDITY_UPDATE, updateInterval)) valuesProvided |= 0b0001;
+        if (req.getHeader(HEAD_HUMIDITY_TARGET, target)) {
+            valuesProvided.setBit(BIT_HUM_TARGET);
+        }
+        if (req.getHeader(HEAD_HUMIDITY_KICK_ON, kickOn)) {
+            valuesProvided.setBit(BIT_HUM_KICK_ON);
+        }
+        if (req.getHeader(HEAD_HUMIDITY_FAN_STOP, fanStop)) {
+            valuesProvided.setBit(BIT_HUM_FAN_STOP);
+        }
+        if (req.getHeader(HEAD_HUMIDITY_UPDATE, updateInterval)) {
+            valuesProvided.setBit(BIT_HUM_UPDATE);
+        }
 
-        if(valuesProvided == 0b0000) {
+        if(!valuesProvided.checkAny()) {
             //return 400 BadRequest unless at least one new value provided
             res.status = HTTP_BAD_REQUEST;
             res.body = "No update values provided, unable to process request.";
         } else {
-            if(valuesProvided & 0b1000) {
+            if(valuesProvided.checkBit(BIT_HUM_TARGET)) {
                 //update target humidity
                 Serial.println("Updating target humidity");
                 humidityControllerSettings->targetHumidity = target.value.toFloat();
                 res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
             }
-            if(valuesProvided & 0b0100) {
+            if(valuesProvided.checkBit(BIT_HUM_KICK_ON)) {
                 //update kickon humidity
                 Serial.println("Updating kickon humidity");
                 humidityControllerSettings->kickOnHumidity = kickOn.value.toFloat();
-                res.addHeader(HEAD_HUMIDITY_KICKON, humidityControllerSettings->kickOnHumidity);
+                res.addHeader(HEAD_HUMIDITY_KICK_ON, humidityControllerSettings->kickOnHumidity);
             }
-            if(valuesProvided & 0b0010) {
+            if(valuesProvided.checkBit(BIT_HUM_FAN_STOP)) {
                 //update fan stop delay
                 Serial.println("Updating fan stop delay");
                 humidityControllerSettings->fanStopDelay = fanStop.value.toInt();
                 res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
             }
-            if(valuesProvided & 0b0001) {
+            if(valuesProvided.checkBit(BIT_HUM_UPDATE)) {
                 //update humidity update check interval
                 Serial.println("Updating humidity check interval");
                 humidityControllerSettings->fanStopDelay = updateInterval.value.toInt();
                 res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
             }
         }
+
+        res.send();
     });
 
     //get humidity status - humidity values and enabled status of fans and atomizers
