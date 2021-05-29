@@ -4,6 +4,11 @@
 #include "Arduino.h"
 #include "DateTime.h"
 
+enum SCHEDULE_TYPE {
+    FIXED   = 1,
+    MONTHLY = 2,
+};
+
 enum DayNight { DAY, NIGHT };
 
 //schedule entry class
@@ -13,12 +18,16 @@ struct ScheduleEntry {
 
     ScheduleEntry(Time, Time);
     DayNight getDayNight(Time);
+    void toString(char*);
 };
 
 //abstract Schedule class
 struct Schedule {
+    virtual int getScheduleType();
     virtual ScheduleEntry* getEntry(Date) = 0;
-    virtual void print();
+    virtual void toString(char*);
+
+    static bool validScheduleType(int i);
 };
 
 //fixed schedule implementation
@@ -26,8 +35,10 @@ struct FixedSchedule : public Schedule {
     ScheduleEntry* entry;
 
     FixedSchedule(ScheduleEntry*);
+
+    int getScheduleType();
     ScheduleEntry* getEntry(Date);
-    void print();
+    void toString(char*);
 };
 
 //monthly schedule implementation
@@ -35,8 +46,10 @@ struct MonthlySchedule : public Schedule {
     ScheduleEntry* schedules[12];
 
     MonthlySchedule(ScheduleEntry*[12]);
+
+    int getScheduleType();
     ScheduleEntry* getEntry(Date);
-    void print();
+    void toString(char*);
 };
 
 //TODO: other schedule implementations

@@ -62,9 +62,6 @@ const char* HEAD_HUMIDITY_ATOMIZER = "x-Humidity-Atomizer";
 const char* HEAD_LIGHT_MODE        = "x-Light-Mode"; // current light mode (day/night)
 const char* HEAD_LS_TYPE           = "x-Light-Schedule-Type"; // light schedule type (fixed, monthly, etc.)
 
-const int SCHED_TYPE_FIXED   = 1;
-const int SCHED_TYPE_MONTHLY = 2;
-
 // global vars
 
 HumidityControllerSettings* humidityControllerSettings;
@@ -395,7 +392,28 @@ void registerRoutes() {
     });
 
     router.get("/lights/schedule", [](WebRequest& req, WebResponse& res){
-        
+        //add type header
+        int schedTypeCode = lightControllerSchedule->getScheduleType();
+        int bodySize = 25;
+        res.addHeader(HEAD_LS_TYPE, (long)schedTypeCode);
+        Serial.println("b");
+        Serial.println(schedTypeCode);
+
+        if(schedTypeCode == SCHEDULE_TYPE::MONTHLY) {
+            bodySize = 12 * 25; // upgrade boy size to hold 12 lines
+        }
+
+        //get body string
+        char body[bodySize];
+        memset(body, 0, bodySize);
+        lightControllerSchedule->toString(body);
+
+        // add body to request
+        res.body = body;
+        Serial.println(res.body);
+
+        //send response
+        res.send();
     });
 
     router.post("/lights/schedule", [](WebRequest& req, WebResponse& res){
@@ -407,23 +425,21 @@ void registerRoutes() {
         // check schedule type header is valid
         if(req.getHeader(HEAD_LS_TYPE, schedType)) {
             schedTypeCode = schedType.value.toInt();
-            if(schedTypeCode >= 1 && schedTypeCode <= 2) {
-                validSchedProvided = true;
-            }
+            validSchedProvided = Schedule::validScheduleType(schedTypeCode);
         }
 
         if(validSchedProvided) {
             bool updateSucceeded = false;
             // check which type we're updating to.
             switch(schedTypeCode) {
-                case SCHED_TYPE_FIXED:
+                case SCHEDULE_TYPE::FIXED:
                 {
                     Serial.println("fixed");
                     // update fixed schedule
                     updateSucceeded = updateFixedSchedule(req.body);
                     break;
                 }
-                case SCHED_TYPE_MONTHLY:
+                case SCHEDULE_TYPE::MONTHLY:
                 {
                     Serial.println("monthly");
                     // update monthly schedule
@@ -434,7 +450,10 @@ void registerRoutes() {
 
             if(updateSucceeded) {
                 Serial.println("Success updating schedule");
-                lightControllerSchedule->print();
+                char body[300];
+                memset(body, 0, 300);
+                lightControllerSchedule->toString(body);
+                Serial.println(body);
             } else {
                 Serial.println("Failed to update schedule");
                 res.status = HTTP_SERVER_ERROR;

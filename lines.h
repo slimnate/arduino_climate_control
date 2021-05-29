@@ -2,7 +2,7 @@
 #define LINES_H
 
 #define LINE_COUNT 12
-#define LINE_SIZE  24
+#define LINE_SIZE  25
 
 //class representing a list of strings (char [])
 struct Lines {

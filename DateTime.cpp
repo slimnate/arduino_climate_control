@@ -90,6 +90,43 @@ int Time::compareSeconds(Time other) {
     return compareWholeNumber(seconds, other.seconds);
 };
 
+void Time::toString(char* dest) {
+    // init char[]s for values
+    char digitBuffer[TIME_COMP_SIZE];
+
+    //add hours
+    memset(digitBuffer, 0, 3); // clear digit buffer
+    itoa(hours, digitBuffer, 10); // parse int into digit buffer
+    if(hours > 9){ //two digits, no need for extra zero
+        memcpy(dest, digitBuffer, 2);
+    } else { //one digit, need to pad leading zero
+        dest[0] = '0';
+        memcpy(dest+1, digitBuffer, 1);
+    }
+    dest[2] = ':';
+
+    //add min
+    memset(digitBuffer, 0, 3);
+    itoa(minutes, digitBuffer, 10);
+    if(minutes > 9){ //two digits, no need for extra zero
+        memcpy(dest+3, digitBuffer, 2);
+    } else { //one digit, need to pad leading zero
+        dest[3] = '0';
+        memcpy(dest+4, digitBuffer, 1);
+    }
+    dest[5] = ':';
+
+    //add sec
+    memset(digitBuffer, 0, 3);
+    itoa(seconds, digitBuffer, 10);
+    if(seconds > 9){ //two digits, no need for extra zero
+        memcpy(dest+6, digitBuffer, 2);
+    } else { //one digit, need to pad leading zero
+        dest[6] = '0';
+        memcpy(dest+7, digitBuffer, 1);
+    }
+}
+
 void Time::printSerial() {
     Serial.print(hours); Serial.print(":");
     Serial.print(minutes); Serial.print(":");

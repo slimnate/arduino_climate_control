@@ -33,6 +33,35 @@ DayNight ScheduleEntry::getDayNight(Time t) {
     return DAY;
 };
 
+void ScheduleEntry::toString(char* dest) {
+    char timeBuffer[9];
+
+    //get day start time
+    memset(timeBuffer, 0, 9);
+    dayStart.toString(timeBuffer);
+
+    //add day start time
+    strcat(dest, "D{");
+    strcat(dest, timeBuffer);
+
+    //get night start time
+    memset(timeBuffer, 0, 9);
+    dayStart.toString(timeBuffer);
+
+    //add night start time
+    strcat(dest, "}N{");
+    strcat(dest, timeBuffer);
+    strcat(dest, "}");
+}
+
+
+bool Schedule::validScheduleType(int i) {
+    if(i >= SCHEDULE_TYPE::FIXED && i <= SCHEDULE_TYPE::MONTHLY) {
+        return true;
+    }
+    return false;
+};
+
 
 // Fixed schedule implementation
 FixedSchedule::FixedSchedule(ScheduleEntry* entry) {
@@ -44,15 +73,12 @@ ScheduleEntry* FixedSchedule::getEntry(Date d) {
     return entry;
 };
 
-void FixedSchedule::print() {
-    Serial.print("Day Start = ");
-    Serial.print(entry->dayStart.hours); Serial.print(":");
-    Serial.print(entry->dayStart.minutes); Serial.print(":");
-    Serial.print(entry->dayStart.seconds); Serial.println();
-    Serial.print("Night Start = ");
-    Serial.print(entry->nightStart.hours); Serial.print(":");
-    Serial.print(entry->nightStart.minutes); Serial.print(":");
-    Serial.print(entry->nightStart.seconds); Serial.println();
+int FixedSchedule::getScheduleType() {
+    return SCHEDULE_TYPE::FIXED;
+}
+
+void FixedSchedule::toString(char* dest) {
+    entry->toString(dest);
 };
 
 
@@ -67,18 +93,18 @@ ScheduleEntry* MonthlySchedule::getEntry(Date d) {
     return schedules[d.month-1];
 };
 
-void MonthlySchedule::print() {
+int MonthlySchedule::getScheduleType() {
+    return SCHEDULE_TYPE::MONTHLY;
+}
+
+void MonthlySchedule::toString(char* dest) {
     ScheduleEntry* entry;
+    char lineBuffer[24];
     for(int i=0; i<12; i++) {
+        memset(lineBuffer, 0, 24);
         entry = schedules[i];
-        Serial.print("Month "); Serial.print(i); Serial.println(": ");
-        Serial.print("Day Start = ");
-        Serial.print(entry->dayStart.hours); Serial.print(":");
-        Serial.print(entry->dayStart.minutes); Serial.print(":");
-        Serial.print(entry->dayStart.seconds); Serial.println();
-        Serial.print("Night Start = ");
-        Serial.print(entry->nightStart.hours); Serial.print(":");
-        Serial.print(entry->nightStart.minutes); Serial.print(":");
-        Serial.print(entry->nightStart.seconds); Serial.println();
+        entry->toString(lineBuffer);
+        strcat(dest, lineBuffer);
+        strcat(dest, "\r\n");
     }
 };

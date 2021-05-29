@@ -3,6 +3,9 @@
 
 #include "Arduino.h"
 
+#define TIME_STR_SIZE 9
+#define TIME_COMP_SIZE 3
+
 template <class T>
 struct Comparable {
     virtual int compare(T) = 0;
@@ -33,6 +36,7 @@ struct Time : Comparable<Time> {
     int compareMinutes(Time);
     int compareSeconds(Time);
 
+    void toString(char*);
     void printSerial();
 };
 
