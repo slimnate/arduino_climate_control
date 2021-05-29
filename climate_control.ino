@@ -2,19 +2,14 @@
 #include <TimeAlarms.h>
 #include <SPI.h>
 #include <WiFiNINA.h>
-#include <Regexp.h>
 
 #include "secrets.h"
+#include "globals.h"
+#include "routes.h"
 
 #include "HumidityController.h"
 #include "LightController.h"
 #include "WifiController.h"
-
-#include "NTPClient.h"
-#include "WebServer.h"
-#include "Router.h"
-#include "Bitflag.h"
-#include "Lines.h"
 
 // control pins
 
@@ -38,42 +33,6 @@ const int LIGHT_UPDATE_DEFAULT = 1 * SECS_PER_MIN; // update lights every 1 minu
 
 const bool WIFI_REQUIRE_LATEST_FIRMWARE = false;
 const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * SECS_PER_MIN;
-
-// web server headers
-
-const char* HEAD_TIME_UTC          = "x-Time-UTC";
-const char* HEAD_TIME_YEAR         = "x-Time-Year";
-const char* HEAD_TIME_MONTH        = "x-Time-Month";
-const char* HEAD_TIME_DAY          = "x-Time-Day";
-const char* HEAD_TIME_HOUR         = "x-Time-Hour";
-const char* HEAD_TIME_MINUTE       = "x-Time-Minute";
-const char* HEAD_TIME_SECOND       = "x-Time-Second";
-
-const char* HEAD_HUMIDITY_TARGET   = "x-Humidity-Target";
-const char* HEAD_HUMIDITY_KICK_ON  = "x-Humidity-KickOn";
-const char* HEAD_HUMIDITY_FAN_STOP = "x-Humidity-FanStopDelay";
-const char* HEAD_HUMIDITY_UPDATE   = "x-Humidity-UpdateInterval";
-const char* HEAD_HUMIDITY_AVERAGE  = "x-Humidity-Average";
-const char* HEAD_HUMIDITY_ONE      = "x-Humidity-SensorOne";
-const char* HEAD_HUMIDITY_TWO      = "x-Humidity-SensorTwo";
-const char* HEAD_HUMIDITY_FANS     = "x-Humidity-Fans";
-const char* HEAD_HUMIDITY_ATOMIZER = "x-Humidity-Atomizer";
-
-const char* HEAD_LIGHT_MODE        = "x-Light-Mode"; // current light mode (day/night)
-const char* HEAD_LS_TYPE           = "x-Light-Schedule-Type"; // light schedule type (fixed, monthly, etc.)
-
-// global vars
-
-HumidityControllerSettings* humidityControllerSettings;
-LightControllerSettings* lightControllerSettings;
-WifiControllerSettings* wifiControllersettings;
-Schedule* lightControllerSchedule;
-
-WiFiUDP udp;
-NTPClient ntp = NTPClient(udp);
-
-WebServer server;
-Router router;
 
 // global functions
 
@@ -177,300 +136,29 @@ time_t timeProvider() {
     return ntp.getNTPTime();
 };
 
-bool updateFixedSchedule(String body) {
-    Serial.println("Updating fixed schedule...");
-    char bodyChars[body.length()+1];
-    char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
-    int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
-    MatchState ms;
-
-    // perform matching
-    memset(bodyChars,0,body.length()+1);
-    Serial.println(body);
-    Serial.println(body.length());
-    body.toCharArray(bodyChars, body.length()+1, 0);
-
-    ms.Target(bodyChars);
-    int res = ms.Match("D{(%d%d):(%d%d):(%d%d)}N{(%d%d):(%d%d):(%d%d)}", 0); // (%d%d):(%d%d):(%d%d)
-    Serial.println(res);
-    Serial.println(ms.level);
-    if(res != REGEXP_MATCHED) {
-        Serial.print("error matching: "); Serial.println(res);
-        return false;
-    }
-    if(ms.level != 6) {
-        Serial.println("not enough matches");
-        return false;
-    }
-
-    // capture matches
-    ms.GetCapture(sDayHour, 0);
-    ms.GetCapture(sDayMin, 1);
-    ms.GetCapture(sDaySec, 2);
-    ms.GetCapture(sNightHour, 3);
-    ms.GetCapture(sNightMin, 4);
-    ms.GetCapture(sNightSec, 5);
-
-    // convert to ints
-    dayHour = String(sDayHour).toInt();
-    dayMin = String(sDayMin).toInt();
-    daySec = String(sDaySec).toInt();
-    nightHour = String(sNightHour).toInt();
-    nightMin = String(sNightMin).toInt();
-    nightSec = String(sNightSec).toInt();
-
-    // update schedule
-    Serial.println("updating");
-    lightControllerSchedule = new FixedSchedule(
-        new ScheduleEntry(
-            Time(dayHour, dayMin, daySec),
-            Time(nightHour, nightMin, nightSec)
-        )
-    );
-
-    return true;
-};
-
-bool updateMonthlySchedule(String body) {
-    Serial.println("Updating monthly schedule");
-    char line[LINE_SIZE];
-    char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
-    int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
-    MatchState ms;
-    ScheduleEntry* entries[LINE_COUNT];
-    Lines lines = Lines::split(body.c_str());
-    lines.printLines();
-
-    for(int i = 0; i < LINE_COUNT; i++) {
-        // get line and match
-        Serial.print("Checking line: "); Serial.println(i);
-        lines.getLine(line, i);
-        Serial.println(line);
-        ms.Target(line);
-        char res = ms.Match("D{(%d%d):(%d%d):(%d%d)}N{(%d%d):(%d%d):(%d%d)}", 0);
-
-        if(res != REGEXP_MATCHED) {
-            Serial.print("error matching: "); Serial.println(res);
-            return false;
-        }
-        if(ms.level != 6) {
-            Serial.println("not enough matches");
-            return false;
-        }
-
-        // capture matches
-        ms.GetCapture(sDayHour, 0);
-        ms.GetCapture(sDayMin, 1);
-        ms.GetCapture(sDaySec, 2);
-        ms.GetCapture(sNightHour, 3);
-        ms.GetCapture(sNightMin, 4);
-        ms.GetCapture(sNightSec, 5);
-
-        // convert to ints
-        dayHour = String(sDayHour).toInt();
-        dayMin = String(sDayMin).toInt();
-        daySec = String(sDaySec).toInt();
-        nightHour = String(sNightHour).toInt();
-        nightMin = String(sNightMin).toInt();
-        nightSec = String(sNightSec).toInt();
-
-        entries[i] = new ScheduleEntry(Time(dayHour, dayMin, daySec), Time(nightHour, nightMin, nightSec));
-    }
-
-    lightControllerSchedule = new MonthlySchedule(entries);
-    return true;
-};
-
+// Register routes for the web server
 void registerRoutes() {
     // test route for testing query params
-    router.get("/test", [](WebRequest& req, WebResponse& res) {
-        for(int i = 0; i < 4; i++) {
-            Serial.print("params["); Serial.print(i); Serial.print("].key = "); Serial.println(req.params[i].key);
-            Serial.print("params["); Serial.print(i); Serial.print("].value = "); Serial.println(req.params[i].value);
-        }
-
-        res.addHeader("Header-Test", "Test header");
-        res.body="Test body contents";
-        res.send();
-    });
+    router.get("/test", route_getTest);
 
     //get server time
-    router.get("/time", [](WebRequest& req, WebResponse& res){
-        res.addHeader(HEAD_TIME_UTC, (long)now());
-        res.addHeader(HEAD_TIME_YEAR, (long)year());
-        res.addHeader(HEAD_TIME_MONTH, (long)month());
-        res.addHeader(HEAD_TIME_DAY, (long)day());
-        res.addHeader(HEAD_TIME_HOUR, (long)hour());
-        res.addHeader(HEAD_TIME_MINUTE, (long)minute());
-        res.addHeader(HEAD_TIME_SECOND, (long)second());
-
-        res.send();
-    });
-
-    // ========== Humididty controller routes ==========
-
-    // get humidity settings
-    router.get("/humidity/settings", [](WebRequest& req, WebResponse& res){
-        res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
-        res.addHeader(HEAD_HUMIDITY_KICK_ON, humidityControllerSettings->kickOnHumidity);
-        res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
-        res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
-
-        res.send();
-    });
-
-    // update humidity settings
-    router.post("/humidity/settings", [](WebRequest& req, WebResponse& res){
-        HttpHeader target, kickOn, fanStop, updateInterval;
-        Bitflag valuesProvided; // bitflag to indicate which values should be updated
-
-        //get relevant headers and set flag bits when found
-        if (req.getHeader(HEAD_HUMIDITY_TARGET, target)) {
-            valuesProvided.setBit(BIT_HUM_TARGET);
-        }
-        if (req.getHeader(HEAD_HUMIDITY_KICK_ON, kickOn)) {
-            valuesProvided.setBit(BIT_HUM_KICK_ON);
-        }
-        if (req.getHeader(HEAD_HUMIDITY_FAN_STOP, fanStop)) {
-            valuesProvided.setBit(BIT_HUM_FAN_STOP);
-        }
-        if (req.getHeader(HEAD_HUMIDITY_UPDATE, updateInterval)) {
-            valuesProvided.setBit(BIT_HUM_UPDATE);
-        }
-
-        if(!valuesProvided.checkAny()) {
-            //return 400 BadRequest unless at least one new value provided
-            res.status = HTTP_BAD_REQUEST;
-            res.body = "No update values provided, unable to process request.";
-        } else {
-            if(valuesProvided.checkBit(BIT_HUM_TARGET)) {
-                //update target humidity
-                Serial.println("Updating target humidity");
-                humidityControllerSettings->targetHumidity = target.value.toFloat();
-                res.addHeader(HEAD_HUMIDITY_TARGET, humidityControllerSettings->targetHumidity);
-            }
-            if(valuesProvided.checkBit(BIT_HUM_KICK_ON)) {
-                //update kickon humidity
-                Serial.println("Updating kickon humidity");
-                humidityControllerSettings->kickOnHumidity = kickOn.value.toFloat();
-                res.addHeader(HEAD_HUMIDITY_KICK_ON, humidityControllerSettings->kickOnHumidity);
-            }
-            if(valuesProvided.checkBit(BIT_HUM_FAN_STOP)) {
-                //update fan stop delay
-                Serial.println("Updating fan stop delay");
-                humidityControllerSettings->fanStopDelay = fanStop.value.toInt();
-                res.addHeader(HEAD_HUMIDITY_FAN_STOP, (long)(humidityControllerSettings->fanStopDelay));
-            }
-            if(valuesProvided.checkBit(BIT_HUM_UPDATE)) {
-                //update humidity update check interval
-                Serial.println("Updating humidity check interval");
-                humidityControllerSettings->fanStopDelay = updateInterval.value.toInt();
-                res.addHeader(HEAD_HUMIDITY_UPDATE, (long)(humidityControllerSettings->updateInterval));
-            }
-        }
-
-        res.send();
-    });
+    router.get("/time", route_getTime);
 
     // get humidity status - humidity values and enabled status of fans and atomizers
-    router.get("/humidity/status", [](WebRequest& req, WebResponse& res){
-        float average, sensorOne, sensorTwo;
-        bool fansEnabled, atomizerEnabled;
-        HumidityController::status(average, sensorOne, sensorTwo, fansEnabled, atomizerEnabled);
-        
-        res.addHeader(HEAD_HUMIDITY_AVERAGE, average);
-        res.addHeader(HEAD_HUMIDITY_ONE, sensorOne);
-        res.addHeader(HEAD_HUMIDITY_TWO, sensorTwo);
-        res.addHeader(HEAD_HUMIDITY_FANS, fansEnabled ? "enabled" : "disabled");
-        res.addHeader(HEAD_HUMIDITY_ATOMIZER, atomizerEnabled ? "enabled" : "disabled");
+    router.get("/humidity/status", route_getHumidityStatus);
 
-        res.send();
-    });
+    // get humidity settings
+    router.get("/humidity/settings", route_getHumiditySettings);
+
+    // update humidity settings
+    router.post("/humidity/settings", route_postHumiditySettings);
 
     // get light status (day/night)
-    router.get("/lights/status", [](WebRequest& req, WebResponse& res){
-        res.addHeader(HEAD_LIGHT_MODE, LightController::getStatusString());
-
-        res.send();
-    });
+    router.get("/lights/status", route_getLightStatus);
 
     // get light schedule
-    router.get("/lights/schedule", [](WebRequest& req, WebResponse& res){
-        //add type header
-        int schedTypeCode = lightControllerSchedule->getScheduleType();
-        int bodySize = 25;
-        res.addHeader(HEAD_LS_TYPE, (long)schedTypeCode);
-        Serial.println("b");
-        Serial.println(schedTypeCode);
-
-        if(schedTypeCode == SCHEDULE_TYPE::MONTHLY) {
-            bodySize = 12 * 25; // upgrade boy size to hold 12 lines
-        }
-
-        //get body string
-        char body[bodySize];
-        memset(body, 0, bodySize);
-        lightControllerSchedule->toString(body);
-
-        // add body to request
-        res.body = body;
-        Serial.println(res.body);
-
-        //send response
-        res.send();
-    });
+    router.get("/lights/schedule", route_getLightSchedule);
 
     // update light schedule
-    router.post("/lights/schedule", [](WebRequest& req, WebResponse& res){
-        HttpHeader schedType;
-        bool validSchedProvided = false;
-        int schedTypeCode = 0;
-        Serial.println(req.body);
-
-        // check schedule type header is valid
-        if(req.getHeader(HEAD_LS_TYPE, schedType)) {
-            schedTypeCode = schedType.value.toInt();
-            validSchedProvided = Schedule::validScheduleType(schedTypeCode);
-        }
-
-        if(validSchedProvided) {
-            bool updateSucceeded = false;
-            // check which type we're updating to.
-            switch(schedTypeCode) {
-                case SCHEDULE_TYPE::FIXED:
-                {
-                    Serial.println("fixed");
-                    // update fixed schedule
-                    updateSucceeded = updateFixedSchedule(req.body);
-                    break;
-                }
-                case SCHEDULE_TYPE::MONTHLY:
-                {
-                    Serial.println("monthly");
-                    // update monthly schedule
-                    updateSucceeded = updateMonthlySchedule(req.body);
-                    break;
-                }
-            }
-
-            if(updateSucceeded) {
-                Serial.println("Success updating schedule");
-                char body[300];
-                memset(body, 0, 300);
-                lightControllerSchedule->toString(body);
-                Serial.println(body);
-            } else {
-                Serial.println("Failed to update schedule");
-                res.status = HTTP_SERVER_ERROR;
-            }
-
-            // send response
-            res.send();
-        } else {
-            // return bad formatted request
-            res.status = HTTP_BAD_REQUEST;
-            res.body = "Invalid request, unable to parse";
-            res.send();
-        }
-    });
+    router.post("/lights/schedule", route_postLightSchedule);
 };
