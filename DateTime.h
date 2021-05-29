@@ -11,6 +11,7 @@ struct Comparable {
     virtual int compare(T) = 0;
 };
 
+// Represents a Date object with day, month, and year
 struct Date : Comparable<Date> {
     byte day, month;
     int year;
@@ -26,6 +27,7 @@ struct Date : Comparable<Date> {
     void printSerial();
 };
 
+// Represents a Time object with hours, minutes, and seconds
 struct Time : Comparable<Time> {
     byte hours, minutes, seconds;
 

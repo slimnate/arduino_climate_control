@@ -18,10 +18,12 @@ struct Lines {
         static Lines split(const char*);
 };
 
+// return number of lines added to list
 int Lines::count() {
     return _lineIndex + 1;
 }
 
+// copy 'line' into next empty line
 bool Lines::addLine(const char* line) {
     if(strlen(line) > LINE_SIZE-1) {
         Serial.println("line too big");
@@ -36,10 +38,12 @@ bool Lines::addLine(const char* line) {
     _lineIndex++;
 }
 
+// update 'dest' to value of line at 'index'
 void Lines::getLine(char* dest, int index) {
     strcpy(dest, lines[index]);
 }
 
+// print line list to Serial
 void Lines::printLines() {
     for(int i = 0; i < count(); i++) {
         char l[LINE_SIZE];
@@ -48,6 +52,7 @@ void Lines::printLines() {
     }
 }
 
+// split a target string 'inStr' into lines and return new Lines object
 Lines Lines::split(const char* inStr) {
     Serial.println("Splitting lines...");
     //vars

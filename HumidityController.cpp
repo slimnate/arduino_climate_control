@@ -26,7 +26,6 @@ bool HumidityController::running = false;
 //method initializers
 void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                                   byte fansPin, HumidityControllerSettings* s) {
-    Serial.println("==========Initializing Humidity Controller==========");
     //init sensors
     sensorOne = DHT22(sensorOnePin);
     sensorTwo = DHT22(sensorTwoPin);
