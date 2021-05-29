@@ -12,5 +12,5 @@ bool Bitflag::checkBit(int toCheck) {
 
 // Return true if any bits are set
 bool Bitflag::checkAny() {
-    return _bits != 0b0000;
+    return _bits != 0;
 };

@@ -30,7 +30,7 @@ const byte PIN_RELAY_NIGHT = 12;
 const float HUMIDITY_TARGET_DEFAULT = 90.0; // target 90% humidity
 const float HUMIDITY_KICKON_DEFAULT = 75.0; // start when below 75% humidity
 const int HUMIDITY_FAN_STOP_DEFAULT = 20; // fans run for 15 seconds after atomizer stops
-const int HUMIDITY_UPDATE_DEFAULT = 10; // update humidity every 10 seconds by default
+const int HUMIDITY_UPDATE_DEFAULT = 2; // update humidity every 10 seconds by default
 
 const Time LIGHT_DAY_START_DEFAULT = Time(07,00,00); //day start 7am
 const Time LIGHT_NIGHT_START_DEFAULT = Time(19,00,00); //night start 7pm

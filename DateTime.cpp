@@ -73,9 +73,14 @@ void Date::printSerial() {
 };
 
 
-//Time object
+// Create new Time object with specified hours, minutes, and seconds
 Time::Time(byte hours, byte minutes, byte seconds) : hours(hours), minutes(minutes), seconds(seconds) { };
 
+// Compare to another Time object.
+// Returns:
+// -1 if this is before other
+// 0 if this is equal to other
+// 1 if this is after other
 int Time::compare(Time other) {
     int cHours, cMinutes, cSeconds;
     cHours = compareHours(other);
@@ -85,7 +90,7 @@ int Time::compare(Time other) {
     if(cHours == 0) {
         if(cMinutes == 0) {
             if(cSeconds == 0) {
-
+                return 0;
             } else return cSeconds;
         } else return cMinutes;
     } else return cSeconds;

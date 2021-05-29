@@ -3,7 +3,10 @@
 
 #include "Arduino.h"
 
+// Size of a null-terminated time string (in format HH:MM:SS)
 #define TIME_STR_SIZE 9
+
+// Size of a null-terminated time component string (digit pair)
 #define TIME_COMP_SIZE 3
 
 template <class T>
