@@ -229,19 +229,12 @@ bool updateFixedSchedule(String body) {
 };
 
 bool updateMonthlySchedule(String body) {
-    Serial.println("a");
     char line[LINE_SIZE];
-    Serial.println("b");
     char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
-    Serial.println("c");
     int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
-    Serial.println("d");
     MatchState ms;
-    Serial.println("e");
     ScheduleEntry* entries[LINE_COUNT];
-    Serial.println("f");
     Lines lines = Lines::split(body.c_str());
-    Serial.println("g");
     lines.printLines();
 
     for(int i = 0; i < LINE_COUNT; i++) {
