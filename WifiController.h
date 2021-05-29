@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "WifiData.h"
 
+// Represents settings for a WifiController object
 struct WifiControllerSettings {
     String ssid;
     String password;
@@ -13,6 +14,7 @@ struct WifiControllerSettings {
     WifiControllerSettings(String, String, bool, int);
 };
 
+// Provides methods for managing wifi connections
 class WifiController {
     private:
         static String firmwareVersion;

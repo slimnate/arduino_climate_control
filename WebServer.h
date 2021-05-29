@@ -57,6 +57,7 @@ struct QueryParam {
     String value; // param value
 };
 
+// Represents a response to an incoming HTTP request
 class WebResponse {
     private:
         int _currentHeaderIndex = 0;
@@ -76,7 +77,7 @@ class WebResponse {
 
 };
 
-// struct to hold web request details
+// Represents an incoming HTTP request
 class WebRequest {
     public:
         WiFiClient client;

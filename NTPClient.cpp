@@ -3,9 +3,9 @@
 #include "WiFi.h"
 #include "WiFiUdp.h"
 #include "IPAddress.h"
+#include "TimeLib.h"
 
-// constructors
-
+// Create NTPCLient with specified udp instance and default port, server, and time zone
 NTPClient::NTPClient(WiFiUDP udp)
         : _udp(udp) {
     _udpPort = NTP_DEFAULT_PORT;
@@ -13,28 +13,31 @@ NTPClient::NTPClient(WiFiUDP udp)
     _timeZone = NTP_DEFAULT_TIMEZONE;
 };
 
+// Create NTPCLient with specified udp instance and port, and default server and time zone
 NTPClient::NTPClient(WiFiUDP udp, int timeZone)
         : _udp(udp), _timeZone(timeZone) {
     _udpPort = NTP_DEFAULT_PORT;
     _server = NTP_DEFAULT_SERVER;
 };
 
+// Create NTPCLient with specified udp instance, port and server, and default time zone
 NTPClient::NTPClient(WiFiUDP udp, String server, int timeZone)
         : _udp(udp), _server(server), _timeZone(timeZone) {
     _udpPort = NTP_DEFAULT_PORT;
 };
 
+// Create NTPCLient with specified udp instance, port and server, and time zone
 NTPClient::NTPClient(WiFiUDP udp, String server, u_int port, int timeZone)
         : _udp(udp), _server(server), _udpPort(port), _timeZone(timeZone) {
 };
 
-// class methods
-
+// Init NTPClient object
 void NTPClient::initUdp() {
     Serial.println("Starting UDP for NTPClient...");
     _udp.begin(_udpPort);
 };
 
+// request the current time from an NTP server and return
 time_t NTPClient::getNTPTime() {
     Serial.println("clearing packets");
     while(_udp.parsePacket() > 0) ; // clear previous incoming udp packets
@@ -58,6 +61,7 @@ const byte NTP_LEAP_INDICATOR_BITS = 0b11000000; // LI: first 2 bits (3 = unsync
 const byte NTP_VERSION_BITS        = 0b00100000; // Version: next 3 bits(4 = current version)
 const byte NTP_MODE_BITS           = 0b00000011; // Mode: last 3 bits (3 = client)
 
+// Send an NTP request packet to the specified IP address
 // Packet format details: https://labs.apnic.net/?p=462
 void NTPClient::sendNTPRequestPacket(IPAddress &addr) {
     //fill packet buffer with 0's
@@ -89,6 +93,7 @@ void NTPClient::sendNTPRequestPacket(IPAddress &addr) {
     Serial.println("NTP packet sent!");
 };
 
+// Receive an incoming NTP response packet
 time_t NTPClient::receiveNTPResponsePacket() {
     //set begin wait time
     u_long beginWait = millis();
@@ -119,7 +124,7 @@ time_t NTPClient::receiveNTPResponsePacket() {
             u_long unixTime = secSince1900 - NTP_UNIX_TIME_OFFSET;
 
             //account for timezone
-            unixTime += _timeZone * NTP_SECONDS_PER_HOUR;
+            unixTime += _timeZone * SECS_PER_HOUR;
 
             //return time to calling function
             return unixTime;

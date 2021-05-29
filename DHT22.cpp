@@ -3,6 +3,7 @@
 
 DHT22::DHT22(byte pin) : pin(pin), dht(pin) { };
 
+// Read sensor and update stored values
 void DHT22::updateValues() {
     int err = SimpleDHTErrSuccess;
 
@@ -20,10 +21,12 @@ void DHT22::updateValues() {
     }
 };
 
+// Return the last read temperature in degrees F
 float DHT22::getTemperature() {
     return temperature;
 };
 
+// Return the last read humidity as a percentage between 0-100
 float DHT22::getHumidity() {
     return humidity;
 }

@@ -192,6 +192,7 @@ byte WebServer::parseLineRequest(char* method, char* path, char* params, char* v
     return PARSE_FAIL;
 };
 
+// Parse query params from string 'paramStr' into the QueryParam array 'dest'
 void WebServer::parseQueryParams(char* paramStr, QueryParam* dest) {
     bool inKey = true;
     char keyBuffer[REQ_PARAMS_STR_SIZE];
@@ -311,6 +312,7 @@ WebResponse WebRequest::getResponse() {
     return res;
 };
 
+// Update 'dest' with header specified by 'name'
 bool WebRequest::getHeader(String name, HttpHeader& dest) {
     for(int i = 0; i < REQ_HEADER_COUNT; i++) {
         HttpHeader curr = headers[i];
@@ -325,11 +327,13 @@ bool WebRequest::getHeader(String name, HttpHeader& dest) {
 
 // ==== WebResponse ====
 
+// Add new header with floating point value
 int WebResponse::addHeader(const char* key, const float value) {
     HttpHeader h { key, String(value, 10) };
     return addHeader(h);
 };
 
+// Add new header with integer value
 int WebResponse::addHeader(const char* key, const long value) {
     String(value, 10);
     char valueStr[32];

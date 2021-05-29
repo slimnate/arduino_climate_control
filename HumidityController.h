@@ -9,6 +9,7 @@
 #include "AtomizerController.h"
 #include "FanController.h"
 
+// Encapsulates settings for the HumidityController
 struct HumidityControllerSettings {
     float targetHumidity;
     float kickOnHumidity;
@@ -18,7 +19,7 @@ struct HumidityControllerSettings {
     HumidityControllerSettings(float target, float kickOn, int fanStop, int update);
 };
 
-
+// HumidityController class provides methods for controlling the sensors, atomizer, and fan system.
 class HumidityController {
     private:
         static DHT22 sensorOne;
@@ -33,7 +34,6 @@ class HumidityController {
     public:
         static void init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                          byte fansPin, HumidityControllerSettings* s);
-        static bool verify();
         static void update();
         static void runHumidifier();
         static void stopAtomizer();

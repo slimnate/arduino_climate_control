@@ -2,10 +2,11 @@
 #include "DateTime.h"
 #include "Scheduling.h"
 
-// ScheduleEntry class
+// Create new ScheduleEntry with specified 'dayStart' and 'nightStart'
 ScheduleEntry::ScheduleEntry(Time dayStart, Time nightStart)
     : dayStart(dayStart), nightStart(nightStart) { };
 
+// Return the correct DayNight value for the specified time
 DayNight ScheduleEntry::getDayNight(Time t) {
     // if time lt dayStart OR gte nightStart, night
     if(t.compare(dayStart) < 0 || t.compare(nightStart) >= 0) {
@@ -33,6 +34,7 @@ DayNight ScheduleEntry::getDayNight(Time t) {
     return DAY;
 };
 
+// Convert the schedule entry into a serialized string representation for sending in web responses
 void ScheduleEntry::toString(char* dest) {
     char timeBuffer[9];
 
@@ -55,6 +57,7 @@ void ScheduleEntry::toString(char* dest) {
 }
 
 
+// Return true if 'i' is a valid schedule type
 bool Schedule::validScheduleType(int i) {
     if(i >= SCHEDULE_TYPE::FIXED && i <= SCHEDULE_TYPE::MONTHLY) {
         return true;
@@ -63,20 +66,23 @@ bool Schedule::validScheduleType(int i) {
 };
 
 
-// Fixed schedule implementation
+// Create new fixed schedule
 FixedSchedule::FixedSchedule(ScheduleEntry* entry) {
     this->entry = entry;
 };
 
+// Get the ScheduleEntry corresponding to date 'd'
 ScheduleEntry* FixedSchedule::getEntry(Date d) {
     //ignores the date passed and always returns the same entry
     return entry;
 };
 
+// Get the schedule type
 int FixedSchedule::getScheduleType() {
     return SCHEDULE_TYPE::FIXED;
 }
 
+// Convert the schedule into a serialized string representation for sending in web responses
 void FixedSchedule::toString(char* dest) {
     entry->toString(dest);
 };
@@ -89,14 +95,17 @@ MonthlySchedule::MonthlySchedule(ScheduleEntry* sched[12]) {
     }
 };
 
+// Get the ScheduleEntry corresponding to date 'd'
 ScheduleEntry* MonthlySchedule::getEntry(Date d) {
     return schedules[d.month-1];
 };
 
+// Get the schedule type
 int MonthlySchedule::getScheduleType() {
     return SCHEDULE_TYPE::MONTHLY;
 }
 
+// Convert the schedule into a serialized string representation for sending in web responses
 void MonthlySchedule::toString(char* dest) {
     ScheduleEntry* entry;
     char lineBuffer[24];

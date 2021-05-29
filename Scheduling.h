@@ -4,11 +4,13 @@
 #include "Arduino.h"
 #include "DateTime.h"
 
+// Represents a lighting schedule type
 enum SCHEDULE_TYPE {
     FIXED   = 1,
     MONTHLY = 2,
 };
 
+// Represents a day/night status
 enum DayNight { DAY, NIGHT };
 
 //schedule entry class

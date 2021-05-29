@@ -21,6 +21,7 @@ bool Router::post(String path, rest_callback_t cb) {
     return route("POST", path, cb);
 };
 
+// Handle an incoming WebRequest by calling the correct handler for the path
 void Router::handle(WebRequest& req) {
     // find matching route
     for(int i = 0; i < _routeIndex; i++) {

@@ -7,6 +7,7 @@
 #include "Time.h"
 #include "TimeAlarms.h"
 
+// Represents the LightControllerSettings status
 struct LightControllerSettings {
     int updateInterval;
     Schedule* schedule;
@@ -14,6 +15,7 @@ struct LightControllerSettings {
     LightControllerSettings(Schedule*, int);
 };
 
+// Represents the LightController class, provides methods for controlling the light system.
 class LightController {
     private:
         static byte dayControlPin, nightControlPin;

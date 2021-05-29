@@ -7,6 +7,8 @@
 #include "FanController.h"
 #include "HumidityController.h"
 
+// Create a new HumidityControllerSettings object with specified
+// target humidity, kick on humidity, fan stop delay (s), and update interval (s)
 HumidityControllerSettings::HumidityControllerSettings(float target, float kickOn, int fanStop, int update){
     targetHumidity = target;
     kickOnHumidity = kickOn;
@@ -14,7 +16,8 @@ HumidityControllerSettings::HumidityControllerSettings(float target, float kickO
     updateInterval = update;
 };
 
-//static member initializers
+// static member initializers
+
 DHT22 HumidityController::sensorOne = NULL;
 DHT22 HumidityController::sensorTwo = NULL;
 AtomizerController HumidityController::atomizer = NULL;
@@ -23,7 +26,7 @@ HumidityControllerSettings* HumidityController::settings;
 bool HumidityController::running = false;
 
 
-//method initializers
+// Initialize the humidity controller with provided sensor, atomizer and fan pins, and settings.
 void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                                   byte fansPin, HumidityControllerSettings* s) {
     //init sensors
@@ -40,10 +43,7 @@ void HumidityController::init(byte sensorOnePin, byte sensorTwoPin, byte atomize
     Alarm.timerRepeat(settings->updateInterval, update);
 };
 
-bool HumidityController::verify() {
-    return true; //TODO: Implement
-};
-
+// Update the humidity system status, called once per update interval
 void HumidityController::update() {
     // update sensor readings
     sensorOne.updateValues();
@@ -69,23 +69,27 @@ void HumidityController::update() {
     }
 };
 
+// Enable the humidifier and fans
 void HumidityController::runHumidifier() {
     Serial.println("Turning ON humidifier");
     atomizer.enable();
     fans.enable();
 };
 
+// Stop the atomizer system
 void HumidityController::stopAtomizer() {
     Serial.println("Turning OFF atomizer");
     atomizer.disable();
 };
 
+// Stop the fan system
 void HumidityController::stopFans() {
     Serial.println("Turning OFF fans");
     fans.disable();
     running = false; // set running false so humidity check knows to start up again.
 };
 
+// Return the average humidity of the two DHT22 sensors
 float HumidityController::averageHumidity() {
     float h1 = sensorOne.getHumidity();
     float h2 = sensorTwo.getHumidity();
@@ -101,6 +105,7 @@ float HumidityController::averageHumidity() {
     return avg;
 };
 
+// Update the provided variables with the humidity system status
 void HumidityController::status(float& avg, float& one, float& two, bool& aEnabled, bool& fEnabled) {
     avg = averageHumidity();
     one = sensorOne.getHumidity();

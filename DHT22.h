@@ -4,6 +4,7 @@
 #include "Arduino.h"
 #include "SimpleDHT.h"
 
+// Represents a DHT22 sensor module
 class DHT22 {
     private:
         byte pin;

@@ -149,6 +149,7 @@ void Time::toString(char *dest) {
     }
 }
 
+// Print Time object to serial in format hh:mm:ss
 void Time::printSerial() {
     Serial.print(hours); Serial.print(":");
     Serial.print(minutes); Serial.print(":");
