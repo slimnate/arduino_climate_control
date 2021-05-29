@@ -26,14 +26,11 @@ int Lines::count() {
 // copy 'line' into next empty line
 bool Lines::addLine(const char* line) {
     if(strlen(line) > LINE_SIZE-1) {
-        Serial.println("line too big");
         return false;
     }
     if(count() > LINE_COUNT){
-        Serial.println("too many lines, not adding");
         return false;
     }
-    Serial.println("added");
     strcpy(lines[_lineIndex], line);
     _lineIndex++;
 }

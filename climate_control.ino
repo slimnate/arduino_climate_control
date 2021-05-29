@@ -92,7 +92,7 @@ void setup()
     }
 
 	// set up humidity controller (sensors, atomizer and fan control)
-    Serial.println("==========Initializing humidity controller==========");
+    Serial.println("==========Initializing Humidity Controller==========");
     humidityControllerSettings = new HumidityControllerSettings(
         HUMIDITY_TARGET_DEFAULT,
         HUMIDITY_KICKON_DEFAULT,
@@ -108,7 +108,7 @@ void setup()
     );
 
     // set up light controller (timer and relays)
-    Serial.println("==========Initializing light controller==========");
+    Serial.println("==========Initializing Light Controller==========");
     lightControllerSchedule = new FixedSchedule(
         new ScheduleEntry(
             LIGHT_DAY_START_DEFAULT,
@@ -126,7 +126,7 @@ void setup()
     );
 
     // set up wifi connection
-    Serial.println("==========Initializing wifi==========");
+    Serial.println("==========Initializing WiFi==========");
     wifiControllersettings = new WifiControllerSettings(
         SECRET_SSID,
         SECRET_PASS,
@@ -151,8 +151,11 @@ void setup()
     // start web server
     Serial.println("==========Initializing Web Server==========");
     server = WebServer(); // initialize web server with no port defaults to port 80.
+    Serial.println("Registering routes...");
     registerRoutes();
+    Serial.println("...done.");
     server.listen();
+    Serial.println("Server Listening...");
 };
 
 // Arduino loop function
@@ -161,7 +164,7 @@ void loop()
     //process incoming http requests each loop
     WebRequest req;
     if(server.processIncomingRequest(req) == 1) {
-        Serial.println("Loop - responding to request...");
+        Serial.println("Responding to request...");
         router.handle(req);
     }
     
@@ -229,6 +232,7 @@ bool updateFixedSchedule(String body) {
 };
 
 bool updateMonthlySchedule(String body) {
+    Serial.println("Updating monthly schedule");
     char line[LINE_SIZE];
     char sDayHour[2], sDayMin[2], sDaySec[2], sNightHour[2], sNightMin[2], sNightSec[2];
     int dayHour, dayMin, daySec, nightHour, nightMin, nightSec;
@@ -280,7 +284,6 @@ bool updateMonthlySchedule(String body) {
 void registerRoutes() {
     // test route for testing query params
     router.get("/test", [](WebRequest& req, WebResponse& res) {
-        Serial.println("GET /test callback");
         for(int i = 0; i < 4; i++) {
             Serial.print("params["); Serial.print(i); Serial.print("].key = "); Serial.println(req.params[i].key);
             Serial.print("params["); Serial.print(i); Serial.print("].value = "); Serial.println(req.params[i].value);
@@ -316,7 +319,7 @@ void registerRoutes() {
         res.send();
     });
 
-    //update humidity settings
+    // update humidity settings
     router.post("/humidity/settings", [](WebRequest& req, WebResponse& res){
         HttpHeader target, kickOn, fanStop, updateInterval;
         Bitflag valuesProvided; // bitflag to indicate which values should be updated
@@ -369,7 +372,7 @@ void registerRoutes() {
         res.send();
     });
 
-    //get humidity status - humidity values and enabled status of fans and atomizers
+    // get humidity status - humidity values and enabled status of fans and atomizers
     router.get("/humidity/status", [](WebRequest& req, WebResponse& res){
         float average, sensorOne, sensorTwo;
         bool fansEnabled, atomizerEnabled;
@@ -384,6 +387,14 @@ void registerRoutes() {
         res.send();
     });
 
+    // get light status (day/night)
+    router.get("/lights/status", [](WebRequest& req, WebResponse& res){
+        res.addHeader(HEAD_LIGHT_MODE, LightController::getStatusString());
+
+        res.send();
+    });
+
+    // get light schedule
     router.get("/lights/schedule", [](WebRequest& req, WebResponse& res){
         //add type header
         int schedTypeCode = lightControllerSchedule->getScheduleType();
@@ -409,6 +420,7 @@ void registerRoutes() {
         res.send();
     });
 
+    // update light schedule
     router.post("/lights/schedule", [](WebRequest& req, WebResponse& res){
         HttpHeader schedType;
         bool validSchedProvided = false;
@@ -460,11 +472,5 @@ void registerRoutes() {
             res.body = "Invalid request, unable to parse";
             res.send();
         }
-    });
-
-    router.get("/lights/status", [](WebRequest& req, WebResponse& res){
-        res.addHeader(HEAD_LIGHT_MODE, LightController::getStatusString());
-
-        res.send();
     });
 };
