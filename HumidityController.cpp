@@ -94,6 +94,13 @@ float HumidityController::averageHumidity() {
     float h1 = sensorOne.getHumidity();
     float h2 = sensorTwo.getHumidity();
 
+    // if one sensor is down, exclude it from the average
+    if(h1 == 0) {
+        h1 = h2;
+    } else if(h2 == 0) {
+        h2 = h1;
+    }
+    
     float avg = (h1 + h2) / 2;
 
     //print details about averages for debugging
