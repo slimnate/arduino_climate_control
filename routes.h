@@ -27,6 +27,10 @@ const char* HEAD_HUMIDITY_TWO      = "x-Humidity-SensorTwo";
 const char* HEAD_HUMIDITY_FANS     = "x-Humidity-Fans";
 const char* HEAD_HUMIDITY_ATOMIZER = "x-Humidity-Atomizer";
 
+const char* HEAD_TEMP_AVERAGE      = "x-Temperature-Average";
+const char* HEAD_TEMP_ONE          = "x-Temperature-SensorOne";
+const char* HEAD_TEMP_TWO          = "x-Temperature-SensorTwo";
+
 const char* HEAD_LIGHT_MODE        = "x-Light-Mode"; // current light mode (day/night)
 const char* HEAD_LS_TYPE           = "x-Light-Schedule-Type"; // light schedule type (fixed, monthly, etc.)
 
@@ -220,13 +224,20 @@ void route_postHumiditySettings(WebRequest& req, WebResponse& res){
 };
 
 void route_getHumidityStatus(WebRequest& req, WebResponse& res){
-    float average, sensorOne, sensorTwo;
+    float avgTemp, tempOne, tempTwo;
+    float avgHum, humOne, humTwo;
     bool fansEnabled, atomizerEnabled;
-    HumidityController::status(average, sensorOne, sensorTwo, fansEnabled, atomizerEnabled);
+
+    HumidityController::controlStatus(fansEnabled, atomizerEnabled);
+    HumidityController::humidity(avgHum, humOne, humTwo);
+    HumidityController::temperature(avgTemp, tempOne, tempTwo);
     
-    res.addHeader(HEAD_HUMIDITY_AVERAGE, average);
-    res.addHeader(HEAD_HUMIDITY_ONE, sensorOne);
-    res.addHeader(HEAD_HUMIDITY_TWO, sensorTwo);
+    res.addHeader(HEAD_TEMP_AVERAGE, avgTemp);
+    res.addHeader(HEAD_TEMP_ONE, tempOne);
+    res.addHeader(HEAD_TEMP_TWO, tempTwo);
+    res.addHeader(HEAD_HUMIDITY_AVERAGE, avgHum);
+    res.addHeader(HEAD_HUMIDITY_ONE, humOne);
+    res.addHeader(HEAD_HUMIDITY_TWO, humTwo);
     res.addHeader(HEAD_HUMIDITY_FANS, fansEnabled ? "enabled" : "disabled");
     res.addHeader(HEAD_HUMIDITY_ATOMIZER, atomizerEnabled ? "enabled" : "disabled");
 

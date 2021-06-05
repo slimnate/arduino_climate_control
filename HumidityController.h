@@ -29,7 +29,7 @@ class HumidityController {
         static HumidityControllerSettings* settings;
         static bool running;
 
-        static float averageHumidity();
+        static float average(float, float);
 
     public:
         static void init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
@@ -39,7 +39,9 @@ class HumidityController {
         static void stopAtomizer();
         static void stopFans();
 
-        static void status(float&, float&, float&, bool&, bool&);
+        static void controlStatus(bool&, bool&);
+        static void humidity(float&, float&, float&);
+        static void temperature(float&, float&, float&);
 };
 
 #endif

@@ -50,7 +50,7 @@ void HumidityController::update() {
     sensorTwo.updateValues();
 
     //check values against threshold
-    float avgHumidity = averageHumidity();
+    float avgHumidity = average(sensorOne.getHumidity(), sensorTwo.getHumidity());
 
     if(avgHumidity < settings->kickOnHumidity) {
         // start humidifier when kick-on humidity reached.
@@ -90,33 +90,39 @@ void HumidityController::stopFans() {
 };
 
 // Return the average humidity of the two DHT22 sensors
-float HumidityController::averageHumidity() {
-    float h1 = sensorOne.getHumidity();
-    float h2 = sensorTwo.getHumidity();
-
+float HumidityController::average(float a, float b) {
     // if one sensor is down, exclude it from the average
-    if(h1 == 0) {
-        h1 = h2;
-    } else if(h2 == 0) {
-        h2 = h1;
+    if(a == 0) {
+        a = b;
+    } else if(b == 0) {
+        b = a;
     }
     
-    float avg = (h1 + h2) / 2;
+    float avg = (a + b) / 2;
 
     //print details about averages for debugging
     Serial.print("Average Humidity: ");
     Serial.print(avg);
-    Serial.print(" ( "); Serial.print(h1);
-    Serial.print(" , ");  Serial.print(h2); Serial.println(" )");
+    Serial.print(" ( "); Serial.print(a);
+    Serial.print(" , ");  Serial.print(b); Serial.println(" )");
 
     return avg;
 };
 
 // Update the provided variables with the humidity system status
-void HumidityController::status(float& avg, float& one, float& two, bool& aEnabled, bool& fEnabled) {
-    avg = averageHumidity();
-    one = sensorOne.getHumidity();
-    two = sensorTwo.getTemperature();
+void HumidityController::controlStatus(bool& aEnabled, bool& fEnabled) {
     aEnabled = atomizer.isEnabled();
     fEnabled = fans.isEnabled();
 };
+
+void HumidityController::humidity(float &avg, float &one, float &two) {
+    one = sensorOne.getHumidity();
+    two = sensorTwo.getTemperature();
+    avg = average(one, two);
+}
+
+void HumidityController::temperature(float &avg, float &one, float &two) {
+    one = sensorOne.getHumidity();
+    two = sensorTwo.getTemperature();
+    avg = average(one, two);
+}
