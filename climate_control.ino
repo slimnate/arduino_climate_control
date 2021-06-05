@@ -44,10 +44,11 @@ bool updateMonthlySchedule(String);
 // Arduino setup functions
 void setup()
 {
+    int serialStart = millis();
     //init serial
-    Serial.begin(9600);
-    while (!Serial) {
-        ;
+    Serial.begin(115200);
+    while (!Serial && millis() - serialStart < 2000) {
+        delay(500);
     }
 
 	// set up humidity controller (sensors, atomizer and fan control)
