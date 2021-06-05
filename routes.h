@@ -244,11 +244,10 @@ void route_getLightSchedule(WebRequest& req, WebResponse& res){
     int schedTypeCode = lightControllerSchedule->getScheduleType();
     int bodySize = 25;
     res.addHeader(HEAD_LS_TYPE, (long)schedTypeCode);
-    Serial.println("b");
     Serial.println(schedTypeCode);
 
     if(schedTypeCode == SCHEDULE_TYPE::MONTHLY) {
-        bodySize = 12 * 25; // upgrade boy size to hold 12 lines
+        bodySize = 12 * 25; // upgrade body size to hold 12 lines
     }
 
     //get body string
