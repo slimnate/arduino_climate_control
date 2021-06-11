@@ -1,12 +1,13 @@
 #include "WifiData.h"
 
-// MacAddress class
+// Create instance of MacAddress
 MacAddress::MacAddress(byte b[6]){
     for(int i = 0; i < 5; i++) {
         bytes[i] = b[i];
     }
 };
 
+// Convert to string HEX representation of current mac address
 String MacAddress::toString() {
     String result;
     for(int i = 5; i >= 0; i--) {

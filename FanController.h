@@ -3,6 +3,7 @@
 
 #include "Arduino.h"
 
+// Represents a DC fan controller
 class FanController {
     private:
         byte controlPin;

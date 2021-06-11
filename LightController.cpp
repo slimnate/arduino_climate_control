@@ -5,7 +5,7 @@
 #include "TimeAlarms.h"
 #include "LightController.h"
 
-// LightControllerSettings class
+// Create new LightControllerSettings class with specified schedule and update interval
 LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : updateInterval(interval) {
     schedule = s;
 };
@@ -16,7 +16,7 @@ byte LightController::nightControlPin;
 DayNight LightController::status;
 LightControllerSettings* LightController::settings;
 
-// LightController class
+// Initialize LightController class with provided day and night pins, and settings
 void LightController::init(byte dayPin, byte nightPin, LightControllerSettings* s) {
     // init pins
     dayControlPin = dayPin;
@@ -33,6 +33,7 @@ void LightController::init(byte dayPin, byte nightPin, LightControllerSettings* 
     Alarm.timerRepeat(settings->updateInterval, update);
 };
 
+// Update the light control system, called once per update interval
 void LightController::update() {
     Date today = Date(year(), (byte)month(), (byte)day());
     Time now = Time((byte)hour(), (byte)minute(), (byte)second());
@@ -59,10 +60,17 @@ void LightController::update() {
     }
 };
 
+// Return the day/night status of the light controller
 DayNight LightController::getStatus() {
     return status;
 };
 
+// Return string representing the day/night status of the system
+const char* LightController::getStatusString() {
+    return status == DAY ? "day" : "night";
+};
+
+// Enable the lights specified by 'newStatus'
 void LightController::enableLights(DayNight newStatus) {
     //update light control pins
     if(newStatus == DAY) {

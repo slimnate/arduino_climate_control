@@ -5,6 +5,7 @@
 #include "WifiData.h"
 #include "WifiController.h"
 
+// Convert an encryption type enum to a string
 String encryptionTypeToString(byte encryptionType) {
     switch(encryptionType) {
         case ENC_TYPE_TKIP:
@@ -28,17 +29,20 @@ String encryptionTypeToString(byte encryptionType) {
     }
 };
 
-// WifiControllerSettings class
+// Create instance of WifiControllerSettings with specified
+// ssid, pass, 'requireLatestFw' and connection check interval
 WifiControllerSettings::WifiControllerSettings(String ssid, String pass, bool requireLatestFw, int connCheckInterval)
         : ssid(ssid), password(pass), requireLatestFirmware(requireLatestFw),
             connectionCheckInterval(connCheckInterval) { }
 
 
-// WifiController class
+// static member initializers
+
 String WifiController::firmwareVersion;
 MacAddress WifiController::macAddress = NULL;
 WifiControllerSettings* WifiController::settings;
 
+// Init WifiController module with specified settings
 void WifiController::init(WifiControllerSettings* s) {
     settings = s;
 
@@ -74,6 +78,7 @@ void WifiController::init(WifiControllerSettings* s) {
     Alarm.timerRepeat(settings->connectionCheckInterval, checkConnectionStatus);
 };
 
+// Convert wifi status enum value to string
 String WifiController::statusToString(byte status) {
     switch(status) {
         case WL_NO_MODULE:
@@ -103,6 +108,7 @@ String WifiController::statusToString(byte status) {
     }
 };
 
+// Verify the wifi capabilities on the device
 bool WifiController::verifyModule() {
     byte moduleStatus = WiFi.status();
     if(moduleStatus == WL_NO_MODULE) {
@@ -113,6 +119,7 @@ bool WifiController::verifyModule() {
     return true;
 };
 
+// Verify that the wifi firmware is up-to-date
 bool WifiController::verifyFirmware() {
     firmwareVersion = WiFi.firmwareVersion();
     if(firmwareVersion < WIFI_FIRMWARE_LATEST_VERSION) {
@@ -124,6 +131,7 @@ bool WifiController::verifyFirmware() {
     return true;
 };
 
+// Return the devices MAC address
 MacAddress WifiController::getMacAddress() {
     byte macBytes[6];
     WiFi.macAddress(macBytes);
@@ -131,15 +139,17 @@ MacAddress WifiController::getMacAddress() {
     return mac;
 };
 
+// Connect to the wifi network specified in the current settings
 void WifiController::connect() {
     Serial.println("Connecting to network: " + settings->ssid);
-    int ssidLen = settings->ssid.length();
-    int passLen = settings->password.length();
+    int ssidLen = settings->ssid.length()+1;
+    int passLen = settings->password.length()+1;
+
     char ssid[ssidLen];
     char pass[passLen];
     
-    settings->ssid.toCharArray(ssid, ssidLen + 1);
-    settings->password.toCharArray(pass, passLen + 1);
+    settings->ssid.toCharArray(ssid, ssidLen);
+    settings->password.toCharArray(pass, passLen);
 
     int attempts = 3;
     while(WiFi.status() != WL_CONNECTED && attempts > 0) {
@@ -147,11 +157,12 @@ void WifiController::connect() {
 
         Serial.print("Wifi.begin("); Serial.print(ssid); Serial.print(", "); Serial.print(pass); Serial.println(")");
         WiFi.begin(ssid, pass);
-        delay(10000);
+        delay(5000);
         Serial.println("Status: " + statusToString(WiFi.status()));
     }
 };
 
+// Check the current network connection status
 void WifiController::checkConnectionStatus() {
     if(WiFi.status() != WL_CONNECTED) {
         Serial.println("WiFi disconnected - attempting to reconnect");
@@ -159,6 +170,7 @@ void WifiController::checkConnectionStatus() {
     }
 };
 
+// Print a list of all currently available networks
 void WifiController::printAvailableNetworks() {
     Serial.println("Scanning networks...");
 
@@ -178,6 +190,7 @@ void WifiController::printAvailableNetworks() {
     }
 };
 
+// Print the wifi network specified by 'byte'
 void WifiController::printNetwork(byte i) {
     Serial.print(i+1); Serial.print(" : ");
 
