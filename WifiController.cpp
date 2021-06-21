@@ -2,7 +2,7 @@
 #include "WiFi.h"
 #include "TimeAlarms.h"
 
-#include "WifiData.h"
+#include "MacAddress.h"
 #include "WifiController.h"
 
 // Convert an encryption type enum to a string

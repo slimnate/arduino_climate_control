@@ -10,16 +10,16 @@ AtomizerController::AtomizerController(byte pin) : controlPin(pin) {
 // Return true if the atomizer is enabled
 bool AtomizerController::isEnabled() {
     return enabled;
-}
+};
 
 // Enable the atomizer
 void AtomizerController::enable() {
     digitalWrite(controlPin, HIGH);
     enabled = true;
-}
+};
 
 // Disable the atomizer
 void AtomizerController::disable() {
     digitalWrite(controlPin, LOW);
     enabled = false;
-}
+};

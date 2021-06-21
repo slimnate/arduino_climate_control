@@ -30,14 +30,14 @@ class HumidityController {
         static bool running;
 
         static float average(float, float);
+        static void runHumidifier();
+        static void stopAtomizer();
+        static void stopFans();
 
     public:
         static void init(byte sensorOnePin, byte sensorTwoPin, byte atomizerPin,
                          byte fansPin, HumidityControllerSettings* s);
         static void update();
-        static void runHumidifier();
-        static void stopAtomizer();
-        static void stopFans();
 
         static void controlStatus(bool&, bool&);
         static void humidity(float&, float&, float&);

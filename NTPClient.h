@@ -4,14 +4,14 @@
 #include "WiFiUdp.h"
 
 //defaults
-const u_int NTP_DEFAULT_PORT = 8888;
+const u_int NTP_DEFAULT_PORT    = 8888;
 const char NTP_DEFAULT_SERVER[] = "us.pool.ntp.org";
-const int NTP_DEFAULT_TIMEZONE = -6; // Central Standard Time = UTC-6:00
+const int NTP_DEFAULT_TIMEZONE  = -6; // Central Standard Time = UTC-6:00
 
 // constants
-const int NTP_PACKET_BUFFER_SIZE = 48;     // packet buffer size = 48 bytes
-const byte NTP_REQUEST_PORT        = 123;  // NTP requests go to port 123
-const byte NTP_RESPONSE_WAIT_TIME  = 1500; // wait up to 1500ms for a response from the NTP server
+const int NTP_PACKET_BUFFER_SIZE  = 48;   // packet buffer size = 48 bytes
+const byte NTP_REQUEST_PORT       = 123;  // NTP requests go to port 123
+const byte NTP_RESPONSE_WAIT_TIME = 1500; // wait up to 1500ms for a response from the NTP server
 const u_long NTP_UNIX_TIME_OFFSET = 2208988800UL; // number of seconds between 1/1/1900 and 1/1/1970
 
 // Represents an NTPClient object
