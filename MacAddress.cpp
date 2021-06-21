@@ -1,4 +1,4 @@
-#include "WifiData.h"
+#include "MacAddress.h""
 
 // Create instance of MacAddress
 MacAddress::MacAddress(byte b[6]){
@@ -17,7 +17,7 @@ String MacAddress::toString() {
 
         result += String(bytes[i], HEX); //print digit(s)
         
-        if(i > 0) { // add colon spearators
+        if(i > 0) { // add colon separators
             result += ":";
         }
     }

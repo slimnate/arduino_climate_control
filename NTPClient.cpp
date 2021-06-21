@@ -71,7 +71,7 @@ void NTPClient::sendNTPRequestPacket(IPAddress &addr) {
     packetBuffer[0] = NTP_LEAP_INDICATOR_BITS | NTP_VERSION_BITS | NTP_MODE_BITS; // first byte: LI, Version, Mode
     packetBuffer[1] = 0;     // second byte: Stratum, or type of clock (0 = Unspecified)
     packetBuffer[2] = 6;     // third byte:  Polling Interval (6 seconds)
-    packetBuffer[3] = 0xEC;  // fourth byte: Peer Clock Precision (0xEC = 236 for ~ 2.4GHz (I think...))
+    packetBuffer[3] = 0xE7;  // fourth byte: Peer Clock Precision (0xE7 = uint 231 = 11100111 = sint -25 = log_2(1/48,000,000) )
 
     // 4 bytes of 0 for Root Delay - packetBuffer[4] ... packetBuffer[7]
 

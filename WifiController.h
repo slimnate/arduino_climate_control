@@ -2,7 +2,7 @@
 #define WIFI_CONTROLLER_H
 
 #include "Arduino.h"
-#include "WifiData.h"
+#include "MacAddress.h"
 
 // Represents settings for a WifiController object
 struct WifiControllerSettings {
