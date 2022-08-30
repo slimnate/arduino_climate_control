@@ -10,10 +10,10 @@ const byte BIT_HUM_UPDATE   = 0b0001; // Humidity update interval flag
 
 struct Bitflag {
     private:
-        int _bits = 0b0000;
+        u_int _bits = 0b0000;
     public:
-        void setBit(int toSet);
-        bool checkBit(int toCheck);
+        void setBit(u_int toSet);
+        bool checkBit(u_int toCheck);
         bool checkAny();
 };
 

@@ -1,12 +1,12 @@
 #include "Bitflag.h"
 
 // Set the bit(s) specified by 'toSet'
-void Bitflag::setBit(int toSet) {
+void Bitflag::setBit(const u_int toSet) {
     _bits |= toSet;
 };
 
 // Return true if 'toCheck' is set
-bool Bitflag::checkBit(int toCheck) {
+bool Bitflag::checkBit(const u_int toCheck) {
     return _bits & toCheck;
 };
 
