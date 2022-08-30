@@ -19,14 +19,14 @@ struct LightControllerSettings {
 class LightController {
     private:
         static byte dayControlPin, nightControlPin;
-        static DayNight status;
+        static LightStatus status;
         static LightControllerSettings* settings;
         
     public:
         static void init(byte dayControlPin, byte nightControlPin, LightControllerSettings*);
         static void update();
-        static void enableLights(DayNight);
-        static DayNight getStatus();
+        static void enableLights(LightStatus);
+        static LightStatus getStatus();
         static const char* getStatusString();
 };
 

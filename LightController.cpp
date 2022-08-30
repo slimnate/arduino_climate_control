@@ -13,7 +13,7 @@ LightControllerSettings::LightControllerSettings(Schedule* s, int interval) : up
 // static member initializers
 byte LightController::dayControlPin;
 byte LightController::nightControlPin;
-DayNight LightController::status;
+LightStatus LightController::status;
 LightControllerSettings* LightController::settings;
 
 // Initialize LightController class with provided day and night pins, and settings
@@ -39,7 +39,7 @@ void LightController::update() {
     Time now = Time((byte)hour(), (byte)minute(), (byte)second());
 
     ScheduleEntry* sched = settings->schedule->getEntry(today);
-    DayNight newStatus = sched->getDayNight(now);
+    LightStatus newStatus = sched->getLightStatus(now);
 
     // if the status has changed, switch lights
     if(status != newStatus) {
@@ -61,7 +61,7 @@ void LightController::update() {
 };
 
 // Return the day/night status of the light controller
-DayNight LightController::getStatus() {
+LightStatus LightController::getStatus() {
     return status;
 };
 
@@ -71,7 +71,7 @@ const char* LightController::getStatusString() {
 };
 
 // Enable the lights specified by 'newStatus'
-void LightController::enableLights(DayNight newStatus) {
+void LightController::enableLights(LightStatus newStatus) {
     //update light control pins
     if(newStatus == DAY) {
         digitalWrite(dayControlPin, HIGH);
