@@ -50,7 +50,9 @@ void HumidityController::update() {
     sensorTwo.updateValues();
 
     //check values against threshold
-    float avgHumidity = average(sensorOne.getHumidity(), sensorTwo.getHumidity());
+    //float avgHumidity = average(sensorOne.getHumidity(), sensorTwo.getHumidity());
+    float avgHumidity, hum1, hum2;
+    humidity(avgHumidity, hum1, hum2);
 
     if(avgHumidity < settings->kickOnHumidity) {
         // start humidifier when kick-on humidity reached.
@@ -101,7 +103,7 @@ float HumidityController::average(float a, float b) {
     float avg = (a + b) / 2;
 
     //print details about averages for debugging
-    Serial.print("Average Humidity: ");
+    Serial.print("avg: ");
     Serial.print(avg);
     Serial.print(" ( "); Serial.print(a);
     Serial.print(" , ");  Serial.print(b); Serial.println(" )");
@@ -116,13 +118,15 @@ void HumidityController::controlStatus(bool& aEnabled, bool& fEnabled) {
 };
 
 void HumidityController::humidity(float &avg, float &one, float &two) {
+    Serial.print("Humidity - ");
     one = sensorOne.getHumidity();
-    two = sensorTwo.getTemperature();
+    two = sensorTwo.getHumidity();
     avg = average(one, two);
 }
 
 void HumidityController::temperature(float &avg, float &one, float &two) {
-    one = sensorOne.getHumidity();
+    Serial.print("Temperature - ");
+    one = sensorOne.getTemperature();
     two = sensorTwo.getTemperature();
     avg = average(one, two);
 }
