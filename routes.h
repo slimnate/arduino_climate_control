@@ -257,7 +257,7 @@ void route_getLightSchedule(WebRequest& req, WebResponse& res){
     res.addHeader(HEAD_LS_TYPE, (long)schedTypeCode);
     Serial.println(schedTypeCode);
 
-    if(schedTypeCode == SCHEDULE_TYPE::MONTHLY) {
+    if(schedTypeCode == ScheduleType::MONTHLY) {
         bodySize = 12 * 25; // upgrade body size to hold 12 lines
     }
 
@@ -290,14 +290,14 @@ void route_postLightSchedule(WebRequest& req, WebResponse& res){
         bool updateSucceeded = false;
         // check which type we're updating to.
         switch(schedTypeCode) {
-            case SCHEDULE_TYPE::FIXED:
+            case ScheduleType::FIXED:
             {
                 Serial.println("fixed");
                 // update fixed schedule
                 updateSucceeded = updateFixedSchedule(req.body);
                 break;
             }
-            case SCHEDULE_TYPE::MONTHLY:
+            case ScheduleType::MONTHLY:
             {
                 Serial.println("monthly");
                 // update monthly schedule
