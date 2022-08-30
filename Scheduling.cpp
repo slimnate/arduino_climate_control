@@ -10,13 +10,11 @@ ScheduleEntry::ScheduleEntry(Time dayStart, Time nightStart)
 LightStatus ScheduleEntry::getLightStatus(Time t) {
     Serial.print("Current time: ");
     t.printSerial();
-
     Serial.print("Day start time: ");
     dayStart.printSerial();
-
     Serial.print("Night start time: ");
     nightStart.printSerial();
-    
+
     // if time lt dayStart OR gte nightStart, night
     if(t.compare(dayStart) < 0 || t.compare(nightStart) >= 0) {
         Serial.println("getLightStatus = NIGHT");
