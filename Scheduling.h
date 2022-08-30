@@ -5,13 +5,13 @@
 #include "DateTime.h"
 
 // Represents a lighting schedule type
-enum SCHEDULE_TYPE {
+enum ScheduleType {
     FIXED   = 1,
     MONTHLY = 2,
 };
 
 // Represents a day/night status
-enum DayNight { DAY, NIGHT };
+enum LightStatus { DAY, NIGHT };
 
 //schedule entry class
 struct ScheduleEntry {
@@ -19,7 +19,7 @@ struct ScheduleEntry {
     Time nightStart;
 
     ScheduleEntry(Time, Time);
-    DayNight getDayNight(Time);
+    LightStatus getLightStatus(Time);
     void toString(char*);
 };
 

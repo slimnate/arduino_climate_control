@@ -6,21 +6,32 @@
 ScheduleEntry::ScheduleEntry(Time dayStart, Time nightStart)
     : dayStart(dayStart), nightStart(nightStart) { };
 
-// Return the correct DayNight value for the specified time
-DayNight ScheduleEntry::getDayNight(Time t) {
+// Return the correct LightStatus value for the specified time
+LightStatus ScheduleEntry::getLightStatus(Time t) {
+    Serial.print("Current time: ");
+    t.printSerial();
+
+    Serial.print("Day start time: ");
+    dayStart.printSerial();
+
+    Serial.print("Night start time: ");
+    nightStart.printSerial();
+    
     // if time lt dayStart OR gte nightStart, night
     if(t.compare(dayStart) < 0 || t.compare(nightStart) >= 0) {
+        Serial.println("getLightStatus = NIGHT");
         return NIGHT;
     }
 
     // if time gte dayStart AND lt nightStart, day
     if(t.compare(dayStart) >= 0 && t.compare(nightStart) < 0) {
+        Serial.println("getLightStatus = DAY");
         return DAY;
     }
 
     // default to DAY if for some reason neither test matches.
     // Also log error, since this should not happen.
-    Serial.println("ERROR: ScheduleEntry.getDayNight() did not match either day or night. Defaulting to DAY.");
+    Serial.println("ERROR: ScheduleEntry.getLightStatus() did not match either day or night. Defaulting to DAY.");
 
     Serial.print("Current time: ");
     t.printSerial();
@@ -48,7 +59,7 @@ void ScheduleEntry::toString(char* dest) {
 
     //get night start time
     memset(timeBuffer, 0, 9);
-    dayStart.toString(timeBuffer);
+    nightStart.toString(timeBuffer);
 
     //add night start time
     strcat(dest, "}N{");
@@ -59,7 +70,7 @@ void ScheduleEntry::toString(char* dest) {
 
 // Return true if 'i' is a valid schedule type
 bool Schedule::validScheduleType(int i) {
-    if(i >= SCHEDULE_TYPE::FIXED && i <= SCHEDULE_TYPE::MONTHLY) {
+    if(i >= ScheduleType::FIXED && i <= ScheduleType::MONTHLY) {
         return true;
     }
     return false;
@@ -79,7 +90,7 @@ ScheduleEntry* FixedSchedule::getEntry(Date d) {
 
 // Get the schedule type
 int FixedSchedule::getScheduleType() {
-    return SCHEDULE_TYPE::FIXED;
+    return ScheduleType::FIXED;
 }
 
 // Convert the schedule into a serialized string representation for sending in web responses
@@ -102,7 +113,7 @@ ScheduleEntry* MonthlySchedule::getEntry(Date d) {
 
 // Get the schedule type
 int MonthlySchedule::getScheduleType() {
-    return SCHEDULE_TYPE::MONTHLY;
+    return ScheduleType::MONTHLY;
 }
 
 // Convert the schedule into a serialized string representation for sending in web responses
