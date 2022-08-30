@@ -93,7 +93,7 @@ int Time::compare(Time other) {
                 return 0;
             } else return cSeconds;
         } else return cMinutes;
-    } else return cSeconds;
+    } else return cHours;
 };
 
 // Compare 'hours' of this to 'hours' of other
