@@ -38,8 +38,6 @@ const int WIFI_CONNECTION_CHECK_INTERVAL = 10 * SECS_PER_MIN;
 
 time_t timeProvider();
 void registerRoutes();
-bool updateFixedSchedule(String);
-bool updateMonthlySchedule(String);
 
 // Arduino setup functions
 void setup()
